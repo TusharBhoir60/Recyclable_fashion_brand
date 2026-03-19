@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GreenThreads – Recycled Fashion for a Greener Planet</title>
+  <meta name="description" content="Shop and sell pre-loved clothing on GreenThreads. Sustainable fashion that helps the planet."/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ── NAVBAR ── -->
+<nav class="navbar">
+  <div class="container nav-inner">
+    <a href="#shop-section" class="nav-logo" onclick="scrollToSection('shop-section')"><span class="leaf"></span>🌿 GreenThreads</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="#shop-section" onclick="scrollToSection('shop-section')">Shop</a>
+      <a href="#about-section" onclick="scrollToSection('about-section')">About</a>
+      <a href="login.html" class="btn btn-primary btn-sm" onclick="login.html">Login</a>
+      <a href="signup.html" class="btn btn-outline btn-sm" onclick="signup.html">Sign Up</a>
+    </div>
+    <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+  </div>
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="index.html">🏠 Home</a>
+    <a href="#shop-section" onclick="scrollToSection('shop-section')">🛍️ Shop</a>
+    <a href="#about-section" onclick="scrollToSection('about-section')">ℹ️ About</a>
+    <a href="login.html" onclick="login.html">🔐 Login</a>
+    <a href="signup.html" onclick="signup.html">📝 Sign Up</a>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="container hero-inner">
+    <div class="hero-content">
+      <div class="hero-tag">♻️ Sustainable Fashion Marketplace</div>
+      <h1>Wear It Again.<br/>Save the Planet.</h1>
+      <p>Discover pre-loved clothing that looks amazing and fights fast fashion. Every purchase reduces waste and CO₂ emissions.</p>
+      <div class="hero-btns">
+        <a href="login.html" class="btn btn-outline btn-lg" onclick="checkLoginAndRedirect('login')">Shop Now</a>
+        <a href="login.html" class="btn btn-outline btn-lg" onclick="checkLoginAndRedirect('login')">Start Selling</a>
+      </div>
+      <div class="hero-stats">
+        <div><div class="hero-stat-num">50K+</div><div class="hero-stat-lbl">Eco Shoppers</div></div>
+        <div><div class="hero-stat-num">200K+</div><div class="hero-stat-lbl">Items Listed</div></div>
+        <div><div class="hero-stat-num">1.2M kg</div><div class="hero-stat-lbl">CO₂ Saved</div></div>
+      </div>
+    </div>
+    <div class="hero-img">
+      <img src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=800&q=80" alt="Sustainable fashion clothing rack"/>
+    </div>
+  </div>
+</section>
+
+<!-- ── CATEGORIES ── -->
+<section class="section" style="background:var(--green-bg);" id="shop-section">
+  <div class="container text-center">
+    <h2 class="section-heading">Shop by Category</h2>
+    <p class="section-sub">Curated recycled clothing for everyone in the family</p>
+    <div class="cat-grid">
+      <div class="cat-card">
+        <img src="https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?w=600&q=80" alt="Men's clothing" class="cat-card__img"/>
+        <div class="cat-card__overlay">
+          <div>
+            <div class="cat-card__label">Men</div>
+            <div class="cat-card__count">2,340 items</div>
+          </div>
+        </div>
+      </div>
+      <div class="cat-card">
+        <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&q=80" alt="Women's clothing" class="cat-card__img"/>
+        <div class="cat-card__overlay">
+          <div>
+            <div class="cat-card__label">Women</div>
+            <div class="cat-card__count">5,102 items</div>
+          </div>
+        </div>
+      </div>
+      <div class="cat-card">
+        <img src="https://images.unsplash.com/photo-1519278409-1f56fdda7fe5?w=600&q=80" alt="Kids' clothing" class="cat-card__img"/>
+        <div class="cat-card__overlay">
+          <div>
+            <div class="cat-card__label">Kids</div>
+            <div class="cat-card__count">1,870 items</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURED PRODUCTS ── -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-heading text-center">Featured Items</h2>
+    <p class="section-sub text-center">Hand-picked pre-loved fashion, quality verified</p>
+    <div class="product-grid">
+
+      <!-- Card 1 -->
+      <a href="login.html" class="product-card">
+        <div class="product-card__img">
+          <img src="https://images.unsplash.com/photo-1543087903-1ac2ec7aa8c5?w=500&q=80" alt="Denim Jacket"/>
+          <div class="product-card__badge"><span class="badge badge-recycled">♻️ Recycled</span></div>
+        </div>
+        <div class="product-card__body">
+          <div class="product-card__name">Classic Denim Jacket</div>
+          <div class="product-card__meta">
+            <span class="product-card__price">₹ 549</span>
+            <span class="product-card__condition">Like New</span>
+          </div>
+          <button class="btn btn-primary btn-sm btn-block">Add to Cart</button>
+        </div>
+      </a>
+
+      <!-- Card 2 -->
+      <a href="login.html" class="product-card">
+        <div class="product-card__img">
+          <img src="https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=500&q=80" alt="Floral Sundress"/>
+          <div class="product-card__badge"><span class="badge badge-recycled">♻️ Recycled</span></div>
+        </div>
+        <div class="product-card__body">
+          <div class="product-card__name">Floral Sundress</div>
+          <div class="product-card__meta">
+            <span class="product-card__price">₹ 349</span>
+            <span class="product-card__condition">Good</span>
+          </div>
+          <button class="btn btn-primary btn-sm btn-block">Add to Cart</button>
+        </div>
+      </a>
+
+      <!-- Card 3 -->
+      <a href="login.html" class="product-card">
+        <div class="product-card__img">
+          <img src="https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=500&q=80" alt="Striped T-Shirt"/>
+          <div class="product-card__badge"><span class="badge badge-recycled">♻️ Recycled</span></div>
+        </div>
+        <div class="product-card__body">
+          <div class="product-card__name">Striped Cotton T-Shirt</div>
+          <div class="product-card__meta">
+            <span class="product-card__price">₹ 199</span>
+            <span class="product-card__condition">Good</span>
+          </div>
+          <button class="btn btn-primary btn-sm btn-block">Add to Cart</button>
+        </div>
+      </a>
+
+      <!-- Card 4 -->
+      <a href="login.html" class="product-card">
+        <div class="product-card__img">
+          <img src="https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=500&q=80" alt="Woollen Sweater"/>
+          <div class="product-card__badge"><span class="badge badge-recycled">♻️ Recycled</span></div>
+        </div>
+        <div class="product-card__body">
+          <div class="product-card__name">Woollen Sweater</div>
+          <div class="product-card__meta">
+            <span class="product-card__price">₹ 699</span>
+            <span class="product-card__condition">Like New</span>
+          </div>
+          <button class="btn btn-primary btn-sm btn-block">Add to Cart</button>
+        </div>
+      </a>
+
+    </div>
+    <div class="text-center mt-8">
+      <a href="login.html" class="btn btn-outline btn-lg">View All Items</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── ABOUT ── -->
+<section class="section" id="about-section">
+  <div class="container text-center">
+    <h2 class="section-heading">About GreenThreads 🌿</h2>
+    <p class="section-sub">Making fashion sustainable, one garment at a time</p>
+    <div class="sustain-grid">
+      <div class="sustain-card">
+        <div class="sustain-icon">🌍</div>
+        <h3>Reduce Carbon Footprint</h3>
+        <p>Buying recycled clothing saves up to 70% of CO₂ compared to buying new. Small choices, big impact.</p>
+      </div>
+      <div class="sustain-card">
+        <div class="sustain-icon">💧</div>
+        <h3>Save Water</h3>
+        <p>One pair of jeans takes 7,500 litres to produce. Pre-loved fashion keeps that water in nature.</p>
+      </div>
+      <div class="sustain-card">
+        <div class="sustain-icon">♻️</div>
+        <h3>Circular Economy</h3>
+        <p>Clothes get a second, third, even fourth life. Less waste. More value. A truly circular closet.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <!-- Mission Section -->
+    <div class="about-mission">
+      <div class="about-content">
+        <h2>Our Mission 🌍</h2>
+        <p>GreenThreads is on a mission to revolutionize the fashion industry by creating a sustainable marketplace for pre-loved clothing. We believe that every garment deserves a second chance, and every purchase can make a positive impact on our planet.</p>
+        
+        <div class="mission-stats">
+          <div class="mission-stat">
+            <div class="stat-icon">♻️</div>
+            <div class="stat-content">
+              <div class="stat-number">50,000+</div>
+              <div class="stat-label">Active Users</div>
+            </div>
+          </div>
+          <div class="mission-stat">
+            <div class="stat-icon">👗</div>
+            <div class="stat-content">
+              <div class="stat-number">125,000+</div>
+              <div class="stat-label">Items Recycled</div>
+            </div>
+          </div>
+          <div class="mission-stat">
+            <div class="stat-icon">💧</div>
+            <div class="stat-content">
+              <div class="stat-number">2.5M L</div>
+              <div class="stat-label">Water Saved</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- How It Works -->
+    <div class="about-section">
+      <h2>How It Works 🔄</h2>
+      <div class="works-grid">
+        <div class="works-card">
+          <div class="works-icon">📸</div>
+          <h3>List Your Items</h3>
+          <p>Take photos of your pre-loved clothes and list them on our platform. Set your price and describe the condition.</p>
+        </div>
+        <div class="works-card">
+          <div class="works-icon">🛍️</div>
+          <h3>Shop Sustainable</h3>
+          <p>Browse thousands of recycled fashion items. Find unique pieces while reducing your environmental impact.</p>
+        </div>
+        <div class="works-card">
+          <div class="works-icon">🤝</div>
+          <h3>Connect & Trade</h3>
+          <p>Connect with eco-conscious buyers and sellers. Join the sustainable fashion movement.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Impact Section -->
+    <div class="about-section">
+      <h2>Environmental Impact 🌱</h2>
+      <div class="impact-grid">
+        <div class="impact-card">
+          <div class="impact-icon">💧</div>
+          <h3>Water Conservation</h3>
+          <p>Every recycled t-shirt saves 2,700 liters of water - enough for one person to drink for 900 days.</p>
+        </div>
+        <div class="impact-card">
+          <div class="impact-icon">⚡</div>
+          <h3>Energy Savings</h3>
+          <p>Recycling clothes uses 95% less energy than producing new garments from raw materials.</p>
+        </div>
+        <div class="impact-card">
+          <div class="impact-icon">🗑️</div>
+          <h3>Waste Reduction</h3>
+          <p>Fashion accounts for 10% of global carbon emissions. We're helping reduce textile waste.</p>
+        </div>
+        <div class="impact-card">
+          <div class="impact-icon">🌍</div>
+          <h3>Carbon Footprint</h3>
+          <p>Extending clothing life reduces CO₂ emissions by up to 82% compared to buying new.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Values Section -->
+    <div class="about-section">
+      <h2>Our Values 💚</h2>
+      <div class="values-grid">
+        <div class="value-card">
+          <h3>🌿 Sustainability</h3>
+          <p>We prioritize environmental impact in every decision, from packaging to platform operations.</p>
+        </div>
+        <div class="value-card">
+          <h3>🤝 Community</h3>
+          <p>Building a community of eco-conscious fashion lovers who support sustainable choices.</p>
+        </div>
+        <div class="value-card">
+          <h3>💰 Affordability</h3>
+          <p>Making sustainable fashion accessible to everyone through fair pricing and quality items.</p>
+        </div>
+        <div class="value-card">
+          <h3>✨ Quality</h3>
+          <p>Ensuring all listed items meet quality standards for a trustworthy marketplace.</p>
+        </div>
+      </div>
+    </div>
+
+<!-- Role Selection Modal -->
+<div class="role-modal" id="roleModal">
+  <div class="role-modal-content">
+    <div class="role-modal-header">
+      <h3>Choose Your Account Type</h3>
+      <button class="modal-close" onclick="closeRoleModal()">×</button>
+    </div>
+    <div class="role-modal-body">
+      <p>Select how you want to use GreenThreads:</p>
+      <div class="role-options">
+        <div class="role-option-card" onclick="selectRoleAndRedirect('user')">
+          <div class="role-icon">👤</div>
+          <div class="role-info">
+            <h4>User Account</h4>
+            <p>Shop, sell, and manage your sustainable fashion journey</p>
+          </div>
+        </div>
+        <div class="role-option-card" onclick="selectRoleAndRedirect('admin')">
+          <div class="role-icon">🛡️</div>
+          <div class="role-info">
+            <h4>Admin Account</h4>
+            <p>Manage platform, users, and analytics</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="nav-logo"><span class="leaf">🌿</span> GreenThreads</a>
+        <p>India's leading recycled clothing marketplace. Shop sustainably, sell easily, and make a difference.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Shop</h4>
+        <a href="shop.html?cat=men">Men's Clothing</a>
+        <a href="shop.html?cat=women">Women's Clothing</a>
+        <a href="shop.html?cat=kids">Kids' Clothing</a>
+        <a href="shop.html">All Items</a>
+      </div>
+      <div class="footer-col">
+        <h4>Sellers</h4>
+        <a href="sell.html">List an Item</a>
+        <a href="seller-dashboard.html">Seller Dashboard</a>
+        <a href="#">Seller Guide</a>
+        <a href="#">Pricing</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="#">About Us</a>
+        <a href="#">Our Mission</a>
+        <a href="#">Blog</a>
+        <a href="#">Contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 GreenThreads. Made with 💚 for a greener planet. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Earnings – GreenThreads Admin</title>
+  <link rel="stylesheet" href="../style.css"/>
+  <link rel="stylesheet" href="admin-style.css"/>
+</head>
+<body>
+<div class="admin-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="admin-sidebar">
+    <div class="admin-logo">
+      <span class="leaf">🌿</span>
+      <span>GreenThreads</span>
+    </div>
+    <nav class="admin-nav">
+      <a href="dashboard.html" class="admin-nav-link"><span class="nav-icon">📊</span><span>Dashboard</span></a>
+      <a href="manage-users.html" class="admin-nav-link"><span class="nav-icon">👥</span><span>Users</span></a>
+      <a href="manage-products.html" class="admin-nav-link"><span class="nav-icon">👕</span><span>Products</span></a>
+      <a href="manage-orders.html" class="admin-nav-link"><span class="nav-icon">📦</span><span>Orders</span></a>
+      <a href="earnings.html" class="admin-nav-link active"><span class="nav-icon">💰</span><span>Earnings</span></a>
+      <a href="reviews.html" class="admin-nav-link"><span class="nav-icon">⭐</span><span>Reviews</span></a>
+      <a href="../index.html" class="admin-nav-link" style="margin-top:auto;color:rgba(255,100,100,.8);" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a>
+    </nav>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="admin-content">
+    <div class="admin-header">
+      <div>
+        <h1>Earnings & Revenue</h1>
+        <div class="admin-breadcrumb">GreenThreads Admin · Financial Overview</div>
+      </div>
+      <div class="admin-top-bar">
+        <div class="admin-user-badge">🛡️ Super Admin</div>
+      </div>
+    </div>
+
+    <!-- Revenue Stats -->
+    <div class="admin-stats-grid">
+      <div class="admin-stat-card">
+        <div class="icon">💰</div>
+        <div class="value">₹ 62.4L</div>
+        <div class="label">Total Revenue</div>
+        <div class="change">↑ +12% this month</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="icon">💵</div>
+        <div class="value">₹ 8.7L</div>
+        <div class="label">Commission Earned</div>
+        <div class="change">↑ +8% this month</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="icon">📦</div>
+        <div class="value">₹ 53.7L</div>
+        <div class="label">Seller Payouts</div>
+        <div class="change">↑ +15% this month</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="icon">🧾</div>
+        <div class="value">₹ 2.1L</div>
+        <div class="label">Pending Payouts</div>
+        <div class="change" style="color:#e65100;">Processing</div>
+      </div>
+    </div>
+
+    <!-- Revenue Chart -->
+    <div class="card" style="margin-bottom:24px;">
+      <div class="card-header">
+        <span class="card-title">Revenue Trend (Last 6 Months)</span>
+        <select class="sort-select" style="width:auto;">
+          <option>Last 6 Months</option>
+          <option>Last 3 Months</option>
+          <option>Last Year</option>
+        </select>
+      </div>
+      <div class="chart-placeholder">
+        <div class="chart-icon">📈</div>
+        <div style="font-weight:600;">Revenue Growth Chart</div>
+        <div style="font-size:.82rem;">(Connect to analytics API)</div>
+      </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Recent Transactions</span>
+        <button class="btn btn-primary btn-sm">Export CSV</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Order ID</th>
+              <th>Seller</th>
+              <th>Order Amount</th>
+              <th>Commission (15%)</th>
+              <th>Seller Payout</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>18 Mar 2025</td>
+              <td style="font-weight:600;color:var(--green-dark);">#RW-2025-00842</td>
+              <td>Priya S.</td>
+              <td>₹ 1,476</td>
+              <td>₹ 221</td>
+              <td>₹ 1,255</td>
+              <td><span class="status-badge status-approved">Completed</span></td>
+            </tr>
+            <tr>
+              <td>18 Mar 2025</td>
+              <td style="font-weight:600;color:var(--green-dark);">#RW-2025-00841</td>
+              <td>Rahul M.</td>
+              <td>₹ 899</td>
+              <td>₹ 135</td>
+              <td>₹ 764</td>
+              <td><span class="status-badge status-approved">Completed</span></td>
+            </tr>
+            <tr>
+              <td>17 Mar 2025</td>
+              <td style="font-weight:600;color:var(--green-dark);">#RW-2025-00840</td>
+              <td>Anjali K.</td>
+              <td>₹ 2,340</td>
+              <td>₹ 351</td>
+              <td>₹ 1,989</td>
+              <td><span class="status-badge status-pending">Pending</span></td>
+            </tr>
+            <tr>
+              <td>17 Mar 2025</td>
+              <td style="font-weight:600;color:var(--green-dark);">#RW-2025-00839</td>
+              <td>Vikram S.</td>
+              <td>₹ 675</td>
+              <td>₹ 101</td>
+              <td>₹ 574</td>
+              <td><span class="status-badge status-approved">Completed</span></td>
+            </tr>
+            <tr>
+              <td>16 Mar 2025</td>
+              <td style="font-weight:600;color:var(--green-dark);">#RW-2025-00838</td>
+              <td>Meera P.</td>
+              <td>₹ 1,890</td>
+              <td>₹ 284</td>
+              <td>₹ 1,606</td>
+              <td><span class="status-badge status-approved">Completed</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Payout Queue -->
+    <div class="card" style="margin-top:24px;">
+      <div class="card-header">
+        <span class="card-title">Pending Payouts</span>
+        <button class="btn btn-primary btn-sm">Process All</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Seller</th>
+              <th>Total Sales</th>
+              <th>Commission</th>
+              <th>Net Payout</th>
+              <th>Payment Method</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="width:32px;height:32px;border-radius:50%;background:var(--green-bg);display:flex;align-items:center;justify-content:center;font-weight:600;color:var(--green-dark);">PS</div>
+                  <span>Priya S.</span>
+                </div>
+              </td>
+              <td>₹ 12,450</td>
+              <td>₹ 1,868</td>
+              <td style="font-weight:600;color:var(--green-dark);">₹ 10,582</td>
+              <td>Bank Transfer</td>
+              <td>
+                <div style="display:flex;gap:6px;">
+                  <button class="btn btn-primary btn-sm">Process</button>
+                  <button class="btn btn-outline btn-sm">View Details</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="width:32px;height:32px;border-radius:50%;background:var(--green-bg);display:flex;align-items:center;justify-content:center;font-weight:600;color:var(--green-dark);">AK</div>
+                  <span>Anjali K.</span>
+                </div>
+              </td>
+              <td>₹ 8,230</td>
+              <td>₹ 1,235</td>
+              <td style="font-weight:600;color:var(--green-dark);">₹ 6,995</td>
+              <td>UPI</td>
+              <td>
+                <div style="display:flex;gap:6px;">
+                  <button class="btn btn-primary btn-sm">Process</button>
+                  <button class="btn btn-outline btn-sm">View Details</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="../script.js"></script>
+</body>
+</html>

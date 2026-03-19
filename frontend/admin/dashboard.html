@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard – GreenThreads</title>
+  <link rel="stylesheet" href="../style.css"/>
+  <link rel="stylesheet" href="admin-style.css"/>
+</head>
+<body>
+<div class="admin-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="admin-sidebar">
+    <div class="admin-logo">
+      <span class="leaf">🌿</span>
+      <span>GreenThreads</span>
+    </div>
+    <nav class="admin-nav">
+      <a href="dashboard.html" class="admin-nav-link active"><span class="nav-icon">📊</span><span>Dashboard</span></a>
+      <a href="manage-users.html" class="admin-nav-link"><span class="nav-icon">👥</span><span>Users</span></a>
+      <a href="manage-products.html" class="admin-nav-link"><span class="nav-icon">👕</span><span>Products</span></a>
+      <a href="manage-orders.html" class="admin-nav-link"><span class="nav-icon">📦</span><span>Orders</span></a>
+      <a href="earnings.html" class="admin-nav-link"><span class="nav-icon">💰</span><span>Earnings</span></a>
+      <a href="reviews.html" class="admin-nav-link"><span class="nav-icon">⭐</span><span>Reviews</span></a>
+      <a href="../index.html" class="admin-nav-link" style="margin-top:auto;color:rgba(255,100,100,.8);" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a>
+    </nav>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="admin-content">
+    <div class="admin-header">
+      <div>
+        <h1>Dashboard Overview</h1>
+        <div class="admin-breadcrumb">GreenThreads Admin · Welcome back, Admin</div>
+      </div>
+      <div class="admin-top-bar">
+        <div class="admin-user-badge">🛡️ Super Admin</div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="admin-stats-grid">
+      <div class="admin-stat-card">
+        <div class="icon">👥</div>
+        <div class="value">12,480</div>
+        <div class="label">Total Users</div>
+        <div class="change">↑ +340 this week</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="icon">👕</div>
+        <div class="value">45,230</div>
+        <div class="label">Total Products</div>
+        <div class="change">↑ +1,200 this week</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="icon">📦</div>
+        <div class="value">8,940</div>
+        <div class="label">Total Orders</div>
+        <div class="change">↑ +530 this week</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="icon">💰</div>
+        <div class="value">₹ 62L</div>
+        <div class="label">Platform Revenue</div>
+        <div class="change">↑ +8% this month</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="icon">⏳</div>
+        <div class="value">127</div>
+        <div class="label">Pending Approvals</div>
+        <div class="change" style="color:#e65100;">Needs attention</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="icon">🌍</div>
+        <div class="value">1.2M kg</div>
+        <div class="label">CO₂ Saved</div>
+        <div class="change">↑ Platform impact</div>
+      </div>
+    </div>
+
+    <!-- Charts row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px;">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Orders (Last 30 days)</span></div>
+        <div class="chart-placeholder">
+          <div class="chart-icon">📈</div>
+          <div style="font-weight:600;">Chart: Orders trend</div>
+          <div style="font-size:.82rem;">(Connect to analytics API)</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Revenue Breakdown</span></div>
+        <div class="chart-placeholder">
+          <div class="chart-icon">🥧</div>
+          <div style="font-weight:600;">Chart: Revenue pie</div>
+          <div style="font-size:.82rem;">(Connect to analytics API)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent activity -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Recent Activity</span>
+        <a href="manage-orders.html" style="font-size:.88rem;color:var(--green-mid);font-weight:600;">View All →</a>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>User</th><th>Action</th><th>Item</th><th>Time</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Priya S.</td><td>New Listing</td><td>Denim Jacket</td><td>5 min ago</td><td><span class="status-badge status-pending">Pending</span></td></tr>
+            <tr><td>Ananya K.</td><td>Order Placed</td><td>Floral Dress</td><td>20 min ago</td><td><span class="status-badge status-approved">Confirmed</span></td></tr>
+            <tr><td>Rohan M.</td><td>New Signup</td><td>—</td><td>1 hr ago</td><td><span class="status-badge status-active">Active</span></td></tr>
+            <tr><td>Seller99</td><td>New Listing</td><td>Kids Hoodie</td><td>2 hr ago</td><td><span class="status-badge status-pending">Pending</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="../script.js"></script>
+</body>
+</html>
