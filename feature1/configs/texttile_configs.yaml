@@ -1,0 +1,50 @@
+# configs/textile_config.yaml
+
+model:
+  backbone: resnet50
+  pretrained_weights: IMAGENET1K_V2
+  freeze_backbone: true         # unfreeze in phase 2 for fine-tuning
+  dropout: 0.4
+  hidden_dim: 256
+
+classes:
+  material: [cotton, denim, polyester, silk_blend, synthetic]
+  # quality gate thresholds (confidence-based)
+  grade_A_threshold: 0.85       # high confidence → premium production
+  grade_B_threshold: 0.60       # medium → basic production
+  # below 0.60 → reject / manual review
+
+data:
+  image_size: 224
+  batch_size: 32
+  num_workers: 4
+  val_split: 0.2
+  # ImageNet normalisation stats
+  mean: [0.485, 0.456, 0.406]
+  std:  [0.229, 0.224, 0.225]
+
+training:
+  epochs: 30
+  optimizer: adam
+  lr: 0.001                    # head LR
+  backbone_lr: 0.0001          # backbone LR when unfrozen
+  weight_decay: 0.0001
+  lr_scheduler: cosine          # CosineAnnealingLR
+  early_stopping_patience: 5
+  checkpoint_dir: weights/
+
+augmentation:
+  random_resized_crop: true
+  horizontal_flip: true
+  vertical_flip: false          # fabric doesn't typically appear flipped vertically
+  color_jitter:
+    brightness: 0.3
+    contrast: 0.3
+    saturation: 0.2
+    hue: 0.05
+  random_rotation: 15           # degrees — fabric can be at angles
+  random_erasing: true          # simulate occlusions / stains
+
+active_learning:
+  confidence_threshold: 0.70    # flag anything below this
+  min_samples_to_retrain: 50    # wait until this many new labels accumulate
