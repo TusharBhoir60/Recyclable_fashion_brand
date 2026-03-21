@@ -1,0 +1,20 @@
+indexes/
+
+# recyclabag-ml/.gitignore
+
+# Data — never commit raw images
+feature1/data/
+feature1/weights/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+dist/
+
+# Notebooks — don't commit output cells
+.ipynb_checkpoints/
+
+# Env
+.env

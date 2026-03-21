@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Products – GreenThreads Admin</title>
+  <link rel="stylesheet" href="../style.css"/>
+  <link rel="stylesheet" href="admin-style.css"/>
+</head>
+<body>
+<div class="admin-layout">
+  <!-- SIDEBAR -->
+  <aside class="admin-sidebar">
+    <div class="admin-logo">
+      <span class="leaf">🌿</span>
+      <span>GreenThreads</span>
+    </div>
+    <nav class="admin-nav">
+      <a href="dashboard.html" class="admin-nav-link"><span class="nav-icon">📊</span><span>Dashboard</span></a>
+      <a href="manage-users.html" class="admin-nav-link"><span class="nav-icon">👥</span><span>Users</span></a>
+      <a href="manage-products.html" class="admin-nav-link active"><span class="nav-icon">👕</span><span>Products</span></a>
+      <a href="manage-orders.html" class="admin-nav-link"><span class="nav-icon">📦</span><span>Orders</span></a>
+      <a href="earnings.html" class="admin-nav-link"><span class="nav-icon">💰</span><span>Earnings</span></a>
+      <a href="reviews.html" class="admin-nav-link"><span class="nav-icon">⭐</span><span>Reviews</span></a>
+      <a href="../index.html" class="admin-nav-link" style="color:rgba(255,100,100,.8);" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a>
+    </nav>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="admin-content">
+    <div class="admin-header">
+      <div>
+        <h1>Manage Products</h1>
+        <div class="admin-breadcrumb">Admin · Products Management</div>
+      </div>
+      <div class="admin-top-bar"><div class="admin-user-badge">🛡️ Super Admin</div></div>
+    </div>
+
+    <!-- Stats -->
+    <div class="admin-stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));">
+      <div class="admin-stat-card"><div class="icon">👕</div><div class="value">45,230</div><div class="label">Total Listed</div></div>
+      <div class="admin-stat-card"><div class="icon">✅</div><div class="value">42,810</div><div class="label">Approved</div></div>
+      <div class="admin-stat-card"><div class="icon">⏳</div><div class="value">127</div><div class="label">Pending</div><div class="change" style="color:#e65100;">Action needed</div></div>
+      <div class="admin-stat-card"><div class="icon">❌</div><div class="value">293</div><div class="label">Rejected</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">All Products</span>
+        <span style="font-size:.85rem;color:var(--text-muted);">45,230 listings</span>
+      </div>
+
+      <!-- Search + Filter -->
+      <div class="search-bar">
+        <input class="search-input" type="text" placeholder="Search products…"/>
+        <select class="search-input" style="flex:0;width:160px;">
+          <option>All Status</option><option>Pending</option><option>Approved</option><option>Rejected</option>
+        </select>
+        <select class="search-input" style="flex:0;width:140px;">
+          <option>All Categories</option><option>Men's</option><option>Women's</option><option>Kids'</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Product</th><th>Seller</th><th>Category</th>
+              <th>Price</th><th>Qty</th><th>Status</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <img src="https://images.unsplash.com/photo-1543087903-1ac2ec7aa8c5?w=60&q=80" alt="" style="width:42px;height:42px;border-radius:6px;object-fit:cover;"/>
+                  <span style="font-weight:600;">Classic Denim Jacket</span>
+                </div>
+              </td>
+              <td>Priya S.</td><td>Men's</td><td>₹ 549</td><td>3</td>
+              <td><span class="status-badge status-pending">⏳ Pending</span></td>
+              <td>
+                <div class="action-btns">
+                  <button class="btn-approve approve-product">Approve</button>
+                  <button class="btn-reject reject-product">Reject</button>
+                  <button class="btn-del del-product">Delete</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <img src="https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=60&q=80" alt="" style="width:42px;height:42px;border-radius:6px;object-fit:cover;"/>
+                  <span style="font-weight:600;">Floral Sundress</span>
+                </div>
+              </td>
+              <td>Ananya K.</td><td>Women's</td><td>₹ 349</td><td>1</td>
+              <td><span class="status-badge status-approved">✅ Approved</span></td>
+              <td>
+                <div class="action-btns">
+                  <button class="btn-reject reject-product">Reject</button>
+                  <button class="btn-del del-product">Delete</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <img src="https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=60&q=80" alt="" style="width:42px;height:42px;border-radius:6px;object-fit:cover;"/>
+                  <span style="font-weight:600;">Woollen Sweater</span>
+                </div>
+              </td>
+              <td>Meera P.</td><td>Men's</td><td>₹ 699</td><td>5</td>
+              <td><span class="status-badge status-pending">⏳ Pending</span></td>
+              <td>
+                <div class="action-btns">
+                  <button class="btn-approve approve-product">Approve</button>
+                  <button class="btn-reject reject-product">Reject</button>
+                  <button class="btn-del del-product">Delete</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <img src="https://images.unsplash.com/photo-1519278409-1f56fdda7fe5?w=60&q=80" alt="" style="width:42px;height:42px;border-radius:6px;object-fit:cover;"/>
+                  <span style="font-weight:600;">Kids Hoodie – Blue</span>
+                </div>
+              </td>
+              <td>Vikram S.</td><td>Kids'</td><td>₹ 299</td><td>2</td>
+              <td><span class="status-badge status-rejected">❌ Rejected</span></td>
+              <td>
+                <div class="action-btns">
+                  <button class="btn-approve approve-product">Approve</button>
+                  <button class="btn-del del-product">Delete</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="../script.js"></script>
+</body>
+</html>
