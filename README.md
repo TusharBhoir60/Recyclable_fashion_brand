@@ -1,4 +1,4 @@
-# RecyclaBag
+# Recyclable fashion brand
 
 A sustainable fashion startup that collects textile waste and converts it into fashion bags — basic, premium, and fully customised — sold through a modern e-commerce platform with an intelligent ML layer powering every user-facing decision.
 
