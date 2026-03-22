@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum Segment {
+  Champions
+  Loyal
+  Occasional
+  AtRisk
+  New
+}
+
+enum ProductType {
+  BASIC
+  PREMIUM
+  CUSTOMIZED
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(CUSTOMER)
+  segment   Segment  @default(New)
+  createdAt DateTime @default(now())
+
+  orders  Order[]
+  reviews Review[]
+}
+
+model Product {
+  id          String      @id @default(cuid())
+  name        String
+  description String
+  type        ProductType
+  basePrice   Float
+  stock       Int         @default(0)
+  images      String[]
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+
+  orderItems OrderItem[]
+  reviews    Review[]
+  embedding  ProductEmbedding?
+}
+
+model ProductEmbedding {
+  id        String  @id @default(cuid())
+  productId String  @unique
+  vector    Float[]
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Customization {
+  id          String   @id @default(cuid())
+  textContent String?
+  imageUrl    String?
+  font        String?
+  color       String?
+  position    String?
+  extraCharge Float    @default(0)
+  createdAt   DateTime @default(now())
+
+  orderItems OrderItem[]
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  userId          String
+  status          OrderStatus @default(PENDING)
+  totalAmount     Float
+  shippingAddress Json
+  paymentId       String?
+  razorpayOrderId String?
+  createdAt       DateTime    @default(now())
+
+  user  User        @relation(fields: [userId], references: [id])
+  items OrderItem[]
+}
+
+model OrderItem {
+  id              String  @id @default(cuid())
+  orderId         String
+  productId       String
+  quantity        Int
+  unitPrice       Float
+  customizationId String?
+
+  order         Order          @relation(fields: [orderId], references: [id])
+  product       Product        @relation(fields: [productId], references: [id])
+  customization Customization? @relation(fields: [customizationId], references: [id])
+}
+
+model Review {
+  id                String   @id @default(cuid())
+  productId         String
+  userId            String
+  text              String
+  rating            Int
+  sentimentLabel    String?
+  sentimentScore    Float?
+  sentimentAspects  Json?
+  sentimentSummary  String?
+  sentimentAnalyzed Boolean  @default(false)
+  createdAt         DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+}
+
+model MlReviewQueue {
+  id             String    @id @default(cuid())
+  imageUrl       String
+  materialPred   String
+  confidence     Float
+  allProbs       Json
+  trueLabel      String?
+  reviewed       Boolean   @default(false)
+  reviewedAt     DateTime?
+  usedInTraining Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+}

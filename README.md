@@ -1,666 +1,545 @@
-# Recyclable fashion brand
+# Recyclable_fashion_brand[README (4).md](https://github.com/user-attachments/files/26158636/README.4.md)
+# recyclabag-ml
 
-A sustainable fashion startup that collects textile waste and converts it into fashion bags — basic, premium, and fully customised — sold through a modern e-commerce platform with an intelligent ML layer powering every user-facing decision.
+Machine learning service for the RecyclaBag platform — a recyclable fashion bag startup that converts textile waste into fashion bags. This repo contains all ML features, model training pipelines, inference servers, and integration code.
 
 ---
 
 ## Table of contents
 
-- [What this project is](#what-this-project-is)
-- [How the system works](#how-the-system-works)
-- [Repository structure](#repository-structure)
+- [Overview](#overview)
+- [Project structure](#project-structure)
 - [Tech stack](#tech-stack)
-- [Team ownership](#team-ownership)
-- [Getting started](#getting-started)
-- [Backend — recyclabag-backend](#backend--recyclabag-backend)
-- [Frontend — recyclabag-frontend](#frontend--recyclabag-frontend)
-- [ML service — recyclabag-ml](#ml-service--recyclabag-ml)
-- [Database schema](#database-schema)
-- [API reference](#api-reference)
-- [ML features](#ml-features)
-- [Deployment](#deployment)
+- [Setup](#setup)
+- [Features](#features)
+  - [Feature 1 — Textile waste classifier](#feature-1--textile-waste-classifier)
+  - [Feature 2 — Visual similarity search](#feature-2--visual-similarity-search)
+  - [Feature 3 — Review sentiment analysis](#feature-3--review-sentiment-analysis)
+  - [Feature 4 — Customer segmentation](#feature-4--customer-segmentation)
+  - [Feature 5 — Demand forecasting](#feature-5--demand-forecasting)
+  - [Feature 6 — Hybrid recommender](#feature-6--hybrid-recommender)
+  - [Feature 7 — Dynamic pricing](#feature-7--dynamic-pricing)
+  - [Feature 8 — Defect detection](#feature-8--defect-detection)
+- [ML service API](#ml-service-api)
+- [Integration with backend](#integration-with-backend)
+- [Model artefacts](#model-artefacts)
+- [Active learning loop](#active-learning-loop)
+- [Running the service](#running-the-service)
 - [Environment variables](#environment-variables)
-- [Development workflow](#development-workflow)
+- [Gitignore rules](#gitignore-rules)
+- [ML concepts index](#ml-concepts-index)
 
 ---
 
-## What this project is
+## Overview
 
-RecyclaBag is a three-layer system:
-
-```
-Customer browser
-      ↓
-Next.js frontend  (Vercel)
-      ↓
-Node.js + Express backend  (Render)
-      ↓                    ↓
-PostgreSQL DB          FastAPI ML service  (Render)
-(Supabase / Neon)
-```
-
-A customer browses bags, customises one with their own text and image, pays via Razorpay, and gets a confirmation. Behind the scenes, every interaction feeds into an ML system that classifies incoming textile waste, finds visually similar products, analyses review sentiment, segments customers, forecasts demand, recommends products, suggests dynamic prices, and inspects finished bags for defects.
-
----
-
-## How the system works
-
-### Customer journey
+The ML service is a standalone FastAPI application that runs alongside the Node.js backend. The backend calls it over HTTP. Every ML feature lives in its own isolated folder — you can work on one feature without touching anything from another.
 
 ```
-1. Browse products
-     ↓ visual search — upload any photo to find similar bags (Feature 2)
-     ↓ recommendations — personalised "you might also like" (Feature 6)
-
-2. Customise a bag
-     ↓ add text (font, colour, position)
-     ↓ upload image
-     ↓ live price calculator including customisation surcharge
-
-3. Place order
-     ↓ Prisma transaction — order + items + customisation written atomically
-
-4. Pay
-     ↓ Razorpay checkout opens in browser
-     ↓ backend verifies HMAC signature
-     ↓ order status → PAID
-
-5. Leave a review
-     ↓ sentiment analysis runs async (Feature 3)
-     ↓ aspect breakdown stored alongside review
-```
-
-### Production / ops journey
-
-```
-Textile waste arrives
-     ↓ photographed
-     ↓ classifier assigns material + quality grade (Feature 1)
-     ↓ routed to premium / basic / manual review
-
-Finished bags photographed
-     ↓ defect detector flags stitching errors, tears, zip faults (Feature 8)
-     ↓ pass → ship | fail → rework queue
-
-Weekly batch jobs
-     ↓ customer segments updated — Champions / Loyal / Occasional / At risk (Feature 4)
-     ↓ demand forecasts refreshed — 30-day per product type (Feature 5)
-     ↓ dynamic pricing suggestions updated per product + segment (Feature 7)
+Node.js backend  ──HTTP──►  FastAPI ML service (port 8000)
+                                 ├── /classify        Feature 1
+                                 ├── /visual-search   Feature 2
+                                 ├── /sentiment       Feature 3
+                                 ├── /segment         Feature 4
+                                 ├── /forecast        Feature 5
+                                 ├── /recommend       Feature 6
+                                 ├── /pricing         Feature 7
+                                 └── /quality         Feature 8
 ```
 
 ---
 
-## Repository structure
-
-Three separate repos, one shared PostgreSQL database.
+## Project structure
 
 ```
-recyclabag-backend/      Node.js + Express API
-recyclabag-frontend/     Next.js 14 App Router
-recyclabag-ml/           Python FastAPI ML service
+recyclabag-ml/
+│
+├── feature_1_classifier/          # Textile material + quality classification
+│   ├── dataset.py
+│   ├── model.py
+│   ├── train.py
+│   ├── evaluate.py
+│   ├── predict.py
+│   ├── active_learning.py
+│   ├── configs/
+│   │   └── textile_config.yaml
+│   ├── weights/                   # .gitignore — large binary files
+│   ├── data/                      # .gitignore — images
+│   └── notebooks/
+│
+├── feature_2_visual_search/       # Image similarity search (FAISS + embeddings)
+│   ├── extractor.py
+│   ├── index_builder.py
+│   ├── searcher.py
+│   ├── index_updater.py
+│   ├── pgvector_store.py
+│   ├── evaluate.py
+│   ├── indexes/                   # .gitignore — FAISS binary files
+│   └── notebooks/
+│
+├── feature_3_sentiment/           # Review sentiment + aspect analysis (BERT)
+│   ├── dataset.py
+│   ├── model.py
+│   ├── train.py
+│   ├── evaluate.py
+│   ├── predict.py
+│   ├── aspect_analyzer.py
+│   ├── configs/
+│   │   └── sentiment_config.yaml
+│   ├── weights/                   # .gitignore
+│   ├── data/                      # .gitignore
+│   └── notebooks/
+│
+├── feature_4_segmentation/        # Customer segmentation (K-Means + RFM)
+│   ├── rfm_builder.py
+│   ├── segmenter.py
+│   ├── evaluate.py
+│   ├── predict.py
+│   ├── configs/
+│   │   └── segmentation_config.yaml
+│   ├── weights/                   # .gitignore
+│   ├── data/                      # .gitignore
+│   └── notebooks/
+│
+├── feature_5_forecasting/         # Demand forecasting (Prophet + LSTM)
+│   ├── preprocessor.py
+│   ├── prophet_model.py
+│   ├── lstm_model.py
+│   ├── evaluate.py
+│   ├── predict.py
+│   ├── configs/
+│   │   └── forecast_config.yaml
+│   ├── weights/                   # .gitignore
+│   ├── data/                      # .gitignore
+│   └── notebooks/
+│
+├── feature_6_recommender/         # Hybrid recommendation system
+│   ├── collaborative.py
+│   ├── content_based.py
+│   ├── hybrid.py
+│   ├── evaluate.py
+│   ├── predict.py
+│   ├── configs/
+│   │   └── recommender_config.yaml
+│   ├── weights/                   # .gitignore
+│   └── notebooks/
+│
+├── feature_7_pricing/             # Dynamic pricing (XGBoost + SHAP)
+│   ├── feature_engineering.py
+│   ├── pricing_model.py
+│   ├── evaluate.py
+│   ├── predict.py
+│   ├── configs/
+│   │   └── pricing_config.yaml
+│   ├── weights/                   # .gitignore
+│   └── notebooks/
+│
+├── feature_8_defect_detection/    # Bag quality control (YOLOv8)
+│   ├── dataset.py
+│   ├── train.py
+│   ├── evaluate.py
+│   ├── predict.py
+│   ├── configs/
+│   │   └── dataset.yaml
+│   ├── weights/                   # .gitignore
+│   ├── data/                      # .gitignore
+│   └── notebooks/
+│
+├── serve/                         # FastAPI — one app, all features
+│   ├── main.py
+│   └── routers/
+│       ├── textile_router.py
+│       ├── visual_search_router.py
+│       ├── sentiment_router.py
+│       ├── segmentation_router.py
+│       ├── forecast_router.py
+│       ├── recommender_router.py
+│       ├── pricing_router.py
+│       └── quality_router.py
+│
+├── scripts/                       # One-off and scheduled utility scripts
+│   ├── build_visual_index.py
+│   ├── label_reviews.py
+│   ├── run_segmentation.py
+│   └── download_artifacts.py
+│
+├── .env
+├── .gitignore
+└── requirements.txt
 ```
 
 ---
 
 ## Tech stack
 
-### Backend
-| Layer | Technology |
-|---|---|
-| Runtime | Node.js 20 |
-| Framework | Express 4 |
-| ORM | Prisma 5 |
-| Database | PostgreSQL (Supabase / Neon) |
-| Auth | JWT (jsonwebtoken + bcryptjs) |
-| File upload | Multer + Cloudinary |
-| Payments | Razorpay |
-| Scheduling | node-cron |
-
-### Frontend
-| Layer | Technology |
-|---|---|
-| Framework | Next.js 14 (App Router) |
-| Language | TypeScript |
-| Styling | Tailwind CSS |
-| State | React Context (Auth + Cart) |
-| Payments | Razorpay checkout.js |
-| Deployment | Vercel |
-
-### ML service
-| Layer | Technology |
-|---|---|
-| Framework | FastAPI + Uvicorn |
-| Deep learning | PyTorch 2.3 + torchvision |
-| NLP | HuggingFace Transformers 4.41 |
-| Classical ML | scikit-learn 1.5 |
-| Gradient boosting | XGBoost 2.0 |
-| Vector search | FAISS-cpu 1.8 |
-| Time series | Prophet 1.1 |
-| Object detection | Ultralytics YOLOv8 |
-| Explainability | SHAP 0.45 |
-| Deployment | Render |
-
----
-
-## Team ownership
-
-| Person | Owns | Branch |
+| Layer | Library | Version |
 |---|---|---|
-| ML Dev (you) | ML service + DevOps + search/review API integration | `feat/ml-integration` |
-| Dev 1 | Auth backend + auth frontend + global layout | `feat/auth` |
-| Dev 2 | Products backend + products frontend + admin panel | `feat/products` |
-| Dev 3 | Customisation backend + cart frontend | `feat/customisation` |
-| Dev 4 | Orders + payments backend + checkout frontend | `feat/orders` |
-
-Each person owns a complete vertical slice — database to UI — so everyone ships something visible and end-to-end.
+| Serving | FastAPI + Uvicorn | 0.111.0 |
+| Deep learning | PyTorch + torchvision | 2.3.0 |
+| Transformers | HuggingFace Transformers | 4.41.0 |
+| Classical ML | scikit-learn | 1.5.0 |
+| Gradient boosting | XGBoost | 2.0.3 |
+| Vector search | FAISS-cpu | 1.8.0 |
+| Time series | Prophet | 1.1.5 |
+| Object detection | Ultralytics (YOLOv8) | 8.2.0 |
+| Explainability | SHAP | 0.45.0 |
+| Data | Pandas + NumPy | 2.2.2 / 1.26.4 |
+| Image processing | Pillow | 10.3.0 |
+| HTTP client | httpx | latest |
 
 ---
 
-## Getting started
+## Setup
 
-### Prerequisites
-
-- Node.js 20+
-- Python 3.11+
-- PostgreSQL (or a free Supabase / Neon account)
-- Cloudinary account (free tier)
-- Razorpay account (test mode)
-
-### Clone all three repos
+### 1. Clone and create virtual environment
 
 ```bash
-git clone https://github.com/your-org/recyclabag-backend.git
-git clone https://github.com/your-org/recyclabag-frontend.git
 git clone https://github.com/your-org/recyclabag-ml.git
+cd recyclabag-ml
+python -m venv .venv
+
+# Windows
+.venv\Scripts\activate
+
+# Mac / Linux
+source .venv/bin/activate
 ```
 
-### Start everything locally
+### 2. Install dependencies
 
 ```bash
-# Terminal 1 — backend
-cd recyclabag-backend
-npm install
-cp .env.example .env      # fill in credentials
-npx prisma migrate dev
-npm run dev               # runs on port 5000
-
-# Terminal 2 — ML service
-cd recyclabag-ml
-python -m venv .venv && .venv\Scripts\activate   # Windows
+# CPU-only (development)
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 pip install -r requirements.txt
-uvicorn serve.main:app --port 8000 --reload      # runs on port 8000
 
-# Terminal 3 — frontend
-cd recyclabag-frontend
-npm install
-cp .env.example .env.local   # fill in credentials
-npm run dev                  # runs on port 3000
+# GPU (Render / production)
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+pip install -r requirements.txt
+```
+
+### 3. Create all directories
+
+**Windows (PowerShell):**
+
+```powershell
+$features = @(
+  "feature_1_classifier/{configs,weights,data/raw,data/processed/{train/{cotton,denim,polyester,silk_blend,synthetic},val/{cotton,denim,polyester,silk_blend,synthetic}},notebooks}",
+  "feature_2_visual_search/{indexes,notebooks}",
+  "feature_3_sentiment/{configs,weights,data/processed,notebooks}",
+  "feature_4_segmentation/{configs,weights,data/processed,notebooks}",
+  "feature_5_forecasting/{configs,weights,data/processed,notebooks}",
+  "feature_6_recommender/{configs,weights,notebooks}",
+  "feature_7_pricing/{configs,weights,notebooks}",
+  "feature_8_defect_detection/{configs,weights,data/{images/{train,val},labels/{train,val}},notebooks}"
+)
+foreach ($f in $features) { New-Item -ItemType Directory -Force -Path $f }
+```
+
+**Mac / Linux:**
+
+```bash
+mkdir -p feature_1_classifier/{configs,weights,data/raw,data/processed/{train/{cotton,denim,polyester,silk_blend,synthetic},val/{cotton,denim,polyester,silk_blend,synthetic}},notebooks}
+mkdir -p feature_2_visual_search/{indexes,notebooks}
+mkdir -p feature_3_sentiment/{configs,weights,data/processed,notebooks}
+mkdir -p feature_4_segmentation/{configs,weights,data/processed,notebooks}
+mkdir -p feature_5_forecasting/{configs,weights,data/processed,notebooks}
+mkdir -p feature_6_recommender/{configs,weights,notebooks}
+mkdir -p feature_7_pricing/{configs,weights,notebooks}
+mkdir -p feature_8_defect_detection/{configs,weights,data/{images/{train,val},labels/{train,val}},notebooks}
+mkdir -p serve/routers scripts
+```
+
+### 4. Environment file
+
+```bash
+cp .env.example .env
+# Fill in DATABASE_URL and BACKEND_API_URL
+```
+
+### 5. Download model artifacts (production deploy)
+
+```bash
+python scripts/download_artifacts.py
+```
+
+### 6. Start the ML service
+
+```bash
+uvicorn serve.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 ---
 
-## Backend — recyclabag-backend
-
-### Folder structure
-
-```
-recyclabag-backend/
-├── prisma/
-│   └── schema.prisma          ← full DB schema
-├── src/
-│   ├── controllers/           ← request/response handling
-│   │   ├── auth.controller.js
-│   │   ├── product.controller.js
-│   │   ├── customization.controller.js
-│   │   ├── order.controller.js
-│   │   └── payment.controller.js
-│   ├── routes/                ← Express route definitions
-│   │   ├── auth.routes.js
-│   │   ├── product.routes.js
-│   │   ├── customization.routes.js
-│   │   ├── order.routes.js
-│   │   ├── payment.routes.js
-│   │   ├── search.routes.js   ← visual search + semantic search
-│   │   └── admin.routes.js    ← ML review queue, forecasts, segments
-│   ├── services/              ← business logic
-│   │   ├── auth.service.js
-│   │   ├── product.service.js
-│   │   ├── customization.service.js
-│   │   ├── order.service.js
-│   │   ├── payment.service.js
-│   │   ├── visualSearch.service.js
-│   │   ├── sentiment.service.js
-│   │   ├── recommender.service.js
-│   │   └── forecast.service.js
-│   ├── middleware/
-│   │   ├── auth.middleware.js      ← JWT verification
-│   │   ├── isAdmin.middleware.js   ← role guard
-│   │   └── upload.middleware.js    ← multer memory storage
-│   ├── jobs/
-│   │   └── segmentCustomers.job.js ← weekly cron
-│   ├── utils/
-│   │   ├── prisma.js
-│   │   ├── cloudinary.js
-│   │   ├── jwt.js
-│   │   └── priceCalculator.js
-│   └── app.js
-├── server.js
-└── .env
-```
-
-### Auth system
-
-JWT-based authentication. Tokens are signed with `JWT_SECRET` and expire in 7 days.
-
-```
-POST /api/auth/register   →  { name, email, password }  →  { user, token }
-POST /api/auth/login      →  { email, password }         →  { user, token }
-```
-
-All protected routes require `Authorization: Bearer <token>` header. Admin routes additionally require `role: ADMIN` on the user record.
-
-### Product system
-
-Products have three types: `BASIC`, `PREMIUM`, `CUSTOMIZED`. Images are stored on Cloudinary and their URLs are saved in a PostgreSQL array. Filtering by type uses a query parameter. Pagination is built in.
-
-```
-GET  /api/products          →  list with ?type=BASIC&page=1&limit=12
-GET  /api/products/:id      →  single product
-POST /api/products          →  admin only — create product
-```
-
-When a product is created, the backend automatically sends the first product image to the ML service to index it for visual search.
-
-### Customisation system
-
-The core feature of the product. Customisations are created as independent records before order placement. This keeps the order transaction clean.
-
-```
-POST /api/customize         →  multipart: text, font, colour, position, image(file)
-                               returns: { id, extraCharge }
-```
-
-Price calculation rules live in `utils/priceCalculator.js`:
-
-| Customisation | Extra charge |
-|---|---|
-| Text only | +₹100 |
-| Image only | +₹200 |
-| Text + image | +₹280 |
-
-The `customizationId` from this call is attached to the order item when the order is created.
-
-### Order system
-
-Orders are created in a Prisma transaction — all items and the order record are written atomically. If anything fails, nothing is committed.
-
-```
-POST /api/orders            →  { items: [{ productId, quantity, customizationId }], shippingAddress }
-GET  /api/orders            →  user's own orders
-GET  /api/orders/:id        →  single order detail
-```
-
-Order statuses: `PENDING → PAID → PROCESSING → SHIPPED → DELIVERED`
-
-### Payment system (Razorpay)
-
-Two-step payment flow:
-
-```
-Step 1 — initiate
-POST /api/payments/initiate    →  { orderId }
-                                   returns: { razorpayOrderId, amount, currency, keyId }
-
-   ↓ frontend opens Razorpay checkout with these params
-
-Step 2 — verify
-POST /api/payments/verify      →  { orderId, razorpayOrderId, razorpayPaymentId, razorpaySignature }
-                                   backend verifies HMAC-SHA256 signature
-                                   order status → PAID
-```
-
-The signature verification is critical — it proves the payment actually came from Razorpay and was not tampered with.
-
-### Review system
-
-Reviews are submitted by users after purchase. Sentiment analysis runs asynchronously — it does not block the review creation response.
-
-```
-POST /api/reviews            →  { productId, text, rating }
-GET  /api/reviews/:productId →  all reviews with sentiment labels
-```
+## Features
 
 ---
-
-## Frontend — recyclabag-frontend
-
-### Folder structure
-
-```
-recyclabag-frontend/
-├── app/                        ← Next.js 14 App Router pages
-│   ├── layout.tsx              ← global layout, fonts, providers
-│   ├── page.tsx                ← home
-│   ├── products/
-│   │   ├── page.tsx            ← product listing + filter + image search
-│   │   └── [id]/page.tsx       ← product detail + similar products
-│   ├── customize/page.tsx      ← customisation builder
-│   ├── cart/page.tsx
-│   ├── checkout/page.tsx
-│   ├── orders/
-│   │   ├── page.tsx            ← order history
-│   │   └── [id]/page.tsx       ← order detail
-│   ├── search/page.tsx         ← visual search results
-│   └── auth/
-│       ├── login/page.tsx
-│       └── register/page.tsx
-├── components/
-│   ├── ProductCard.tsx
-│   ├── ProductGrid.tsx
-│   ├── CustomizationForm.tsx   ← text + font + colour + image upload
-│   ├── CartSummary.tsx
-│   ├── RazorpayButton.tsx      ← opens Razorpay checkout
-│   ├── ImageSearchUpload.tsx   ← upload photo → find similar bags
-│   ├── SimilarProducts.tsx     ← "More like this" on product page
-│   └── ReviewForm.tsx
-├── services/                   ← all API calls — components stay clean
-│   ├── api.ts                  ← base fetch with JWT injection
-│   ├── auth.service.ts
-│   ├── product.service.ts
-│   ├── customization.service.ts
-│   ├── order.service.ts
-│   └── payment.service.ts
-├── hooks/
-│   ├── useAuth.ts
-│   ├── useCart.ts
-│   └── useProducts.ts
-└── context/
-    ├── AuthContext.tsx          ← JWT storage + user state
-    └── CartContext.tsx          ← cart items in localStorage
-```
-
-### Key pages explained
-
-**Product listing (`/products`)** — fetches all active products with type filter. The `ImageSearchUpload` component sits above the grid. When a user uploads a photo, it calls `POST /api/search/image` and replaces the grid with visually similar results.
-
-**Product detail (`/products/:id`)** — shows full product info, the customisation CTA, and the `SimilarProducts` component which calls `GET /api/search/similar/:id` on mount.
-
-**Customisation (`/customize`)** — text input with font and colour pickers, image upload with live preview, and a price breakdown that updates in real time as options are toggled. On submit, calls `POST /api/customize` (multipart), stores the returned `customizationId` in cart state.
-
-**Checkout** — shipping address form + `RazorpayButton`. The button calls `POST /api/payments/initiate`, opens the Razorpay modal, and on success calls `POST /api/payments/verify`. On verification success, redirects to `/orders/:id?success=true`.
-
-### Cart state
-
-The cart lives in React Context + `localStorage`. There is no cart table in the database. Cart items have the shape:
-
-```typescript
-interface CartItem {
-  productId:       string;
-  name:            string;
-  quantity:        number;
-  unitPrice:       number;
-  customizationId: string | null;
-  extraCharge:     number;
-  imageUrl:        string;
-}
-```
-
-The cart is only persisted to the database when the user places an order.
-
----
-
-## ML service — recyclabag-ml
-
-### Service structure
-
-```
-recyclabag-ml/
-├── feature_1_classifier/      ← textile waste classification
-├── feature_2_visual_search/   ← image similarity search
-├── feature_3_sentiment/       ← review sentiment analysis
-├── feature_4_segmentation/    ← customer segmentation
-├── feature_5_forecasting/     ← demand forecasting
-├── feature_6_recommender/     ← product recommendations
-├── feature_7_pricing/         ← dynamic pricing
-├── feature_8_defect_detection/← quality control
-├── serve/                     ← FastAPI app + all routers
-└── scripts/                   ← one-off and scheduled utilities
-```
-
-Each feature is completely self-contained. You can work on Feature 5 without understanding Feature 2. They share nothing except the FastAPI serving layer.
-
----
-
-## Database schema
-
-### Core tables
-
-```
-Users
-  id, name, email, password (hashed), role (CUSTOMER|ADMIN),
-  segment (Champions|Loyal|Occasional|At risk|New), createdAt
-
-Products
-  id, name, description, type (BASIC|PREMIUM|CUSTOMIZED),
-  basePrice, stock, images (String[]), isActive, createdAt
-
-Customizations
-  id, textContent, imageUrl (Cloudinary), font, color,
-  position (front|back), extraCharge, createdAt
-
-Orders
-  id, userId, status (PENDING|PAID|PROCESSING|SHIPPED|DELIVERED|CANCELLED),
-  totalAmount, shippingAddress (JSON), paymentId, razorpayOrderId, createdAt
-
-OrderItems
-  id, orderId, productId, quantity, unitPrice, customizationId
-
-Reviews
-  id, productId, userId, text, rating (1-5),
-  sentimentLabel, sentimentScore, sentimentAspects (JSON),
-  sentimentSummary, sentimentAnalyzed, createdAt
-
-MlReviewQueue
-  id, imageUrl, materialPred, confidence, allProbs (JSON),
-  trueLabel, reviewed, reviewedAt, usedInTraining, createdAt
-```
-
-### Relationships
-
-```
-User        →  many Orders
-User        →  many Reviews
-Order       →  many OrderItems
-OrderItem   →  one Product
-OrderItem   →  optional one Customization
-Product     →  many Reviews
-Product     →  one ProductEmbedding (pgvector)
-```
-
----
-
-## API reference
-
-### Auth
-
-| Method | Endpoint | Auth | Body | Response |
-|---|---|---|---|---|
-| POST | `/api/auth/register` | — | `{ name, email, password }` | `{ user, token }` |
-| POST | `/api/auth/login` | — | `{ email, password }` | `{ user, token }` |
-
-### Products
-
-| Method | Endpoint | Auth | Notes |
-|---|---|---|---|
-| GET | `/api/products` | — | `?type=BASIC&page=1&limit=12` |
-| GET | `/api/products/:id` | — | |
-| POST | `/api/products` | Admin | multipart with images |
-
-### Customisation
-
-| Method | Endpoint | Auth | Body |
-|---|---|---|---|
-| POST | `/api/customize` | JWT | multipart: textContent, font, color, position, image(file) |
-
-### Orders
-
-| Method | Endpoint | Auth | Body |
-|---|---|---|---|
-| POST | `/api/orders` | JWT | `{ items, shippingAddress }` |
-| GET | `/api/orders` | JWT | — |
-| GET | `/api/orders/:id` | JWT | — |
-
-### Payments
-
-| Method | Endpoint | Auth | Body |
-|---|---|---|---|
-| POST | `/api/payments/initiate` | JWT | `{ orderId }` |
-| POST | `/api/payments/verify` | JWT | `{ orderId, razorpayOrderId, razorpayPaymentId, razorpaySignature }` |
-
-### Search (ML-powered)
-
-| Method | Endpoint | Auth | Notes |
-|---|---|---|---|
-| POST | `/api/search/image` | — | multipart image upload |
-| GET | `/api/search/similar/:productId` | — | `?top_k=6` |
-
-### Admin (ML + operations)
-
-| Method | Endpoint | Auth | Notes |
-|---|---|---|---|
-| GET | `/api/admin/orders/all` | Admin | for ML segmentation + forecasting |
-| POST | `/api/admin/users/segments` | Admin | bulk segment write-back |
-| GET | `/api/admin/forecast/:type` | Admin | demand forecast per product type |
-| GET | `/api/admin/ml/review-queue` | Admin | low-confidence predictions |
-| PATCH | `/api/admin/ml/review-queue/:id` | Admin | label a flagged prediction |
-
----
-
-## ML features
 
 ### Feature 1 — Textile waste classifier
 
-**Status:** ✅ Complete
+**Status:** ✅ Implemented
 
-Photographs of incoming textile waste are classified by material type and quality grade. The grade determines which production line the material goes to.
+**What it does:** Photographs of incoming textile waste are classified by material type and assigned a quality grade that routes them to the correct production line.
 
-**How it works:** ResNet-50 (pretrained on ImageNet) with the classification head replaced by a custom two-layer head trained on fabric images. The backbone stays frozen for the first 10 epochs, then the last two residual blocks are unfrozen for fine-tuning. Active learning flags low-confidence predictions for admin labelling, which get added back to the training set weekly.
+**ML concepts:** Transfer learning, CNN fine-tuning, data augmentation, class imbalance (WeightedRandomSampler), mixed precision training, label smoothing, gradual unfreezing, active learning.
 
-**Output:**
-```json
+**Model:** ResNet-50 (ImageNet pretrained) + custom classification head
+
+**Classes:**
+
+| Class | Description |
+|---|---|
+| `cotton` | Natural cotton fabric |
+| `denim` | Denim / jeans material |
+| `polyester` | Synthetic polyester |
+| `silk_blend` | Silk or silk-blend |
+| `synthetic` | Other synthetic materials |
+
+**Quality gate:**
+
+| Grade | Confidence threshold | Routes to |
+|---|---|---|
+| A | ≥ 0.85 | Premium bag production |
+| B | ≥ 0.60 | Basic bag production |
+| Reject | < 0.60 | Manual review queue |
+
+**Training:**
+
+```bash
+# Prepare data
+python scripts/label_reviews.py    # or place images manually in data/processed/
+
+# Train
+python feature_1_classifier/train.py
+
+# Evaluate
+python feature_1_classifier/evaluate.py
+```
+
+**API endpoint:**
+
+```
+POST /classify
+Content-Type: multipart/form-data
+Body: file (image/jpeg | image/png | image/webp, max 5MB)
+
+Response:
 {
-  "material": "denim",
-  "confidence": 0.93,
-  "grade": "A",
-  "route_to": "premium",
+  "material":    "denim",
+  "confidence":  0.9312,
+  "grade":       "A",
+  "route_to":    "premium",
+  "all_probs":   { "cotton": 0.02, "denim": 0.93, ... },
   "flag_for_review": false
 }
 ```
 
-**Concepts learned:** Transfer learning, CNN fine-tuning, data augmentation, class imbalance (WeightedRandomSampler), mixed precision training, label smoothing, gradual unfreezing, active learning.
+**Data requirements:** Minimum 200 labelled images per class to start. Active learning adds samples automatically from low-confidence predictions.
 
 ---
 
 ### Feature 2 — Visual similarity search
 
-**Status:** ✅ Complete
+**Status:** ✅ Implemented
 
-A user uploads any bag photo and gets the most visually similar products from the catalog. Also powers "More like this" on product detail pages without any image upload.
+**What it does:** A user uploads any bag photo and gets the most visually similar products from the catalog. Also powers "More like this" on product detail pages.
 
-**How it works:** The same ResNet-50 backbone from Feature 1, but with `nn.Identity()` replacing the head entirely. Every image becomes a 2048-dimensional vector. After L2 normalisation, cosine similarity between images equals a dot product — which FAISS computes across the entire catalog in under 5ms. New products are added to the live index incrementally without a full rebuild.
+**ML concepts:** Feature extraction (vs classification), embedding spaces, L2 normalisation, cosine similarity, FAISS index types (Flat vs IVF vs HNSW), approximate nearest neighbour search, incremental index updates, pgvector for filtered search.
 
-**Phase 2 upgrade:** pgvector in PostgreSQL enables filtered similarity search inside a single SQL query — "find similar bags that are PREMIUM and under ₹2000."
+**Model:** ResNet-50 backbone with `nn.Identity()` replacing the FC head → 2048-dim embedding vector
 
-**Concepts learned:** Feature extraction vs classification, embedding spaces, L2 normalisation, FAISS index types, approximate nearest neighbour, incremental updates, pgvector.
+**How similarity works:**
+
+Every bag image is mapped to a 2048-dimensional vector. After L2 normalisation, cosine similarity between two images equals their dot product. FAISS searches across all product vectors in milliseconds to find the top-K closest.
+
+**Index types:**
+
+| Index | Use when | Accuracy | Latency |
+|---|---|---|---|
+| `IndexFlatIP` | < 5,000 products | Exact | ~5ms |
+| `IndexIVFFlat` | 5,000–500,000 | ~97% | ~15ms |
+| `IndexHNSWFlat` | Any size, lowest latency | ~99% | ~3ms |
+
+**Build the index:**
+
+```bash
+# Pull products from backend and build FAISS index
+python scripts/build_visual_index.py
+```
+
+**API endpoints:**
+
+```
+POST /visual-search/by-image
+Content-Type: multipart/form-data
+Body: file (image), top_k (int, default 8), exclude (product_id optional)
+
+GET /visual-search/by-product/{product_id}?top_k=6
+
+POST /visual-search/add-product
+Body: product_id, name, type, base_price, file (image)
+```
+
+**Production upgrade:** Use pgvector in PostgreSQL to enable filtered similarity search — e.g. "find similar bags that are PREMIUM and under ₹2000" in a single SQL query.
 
 ---
 
 ### Feature 3 — Review sentiment analysis
 
-**Status:** ✅ Complete
+**Status:** ✅ Implemented
 
-Every submitted review is automatically analysed for overall sentiment and broken down by five product-specific aspects. Results power the admin dashboard and feed into product improvement decisions.
+**What it does:** Every review is automatically analysed for overall sentiment (positive / neutral / negative) and broken down by five product aspects. Results are stored alongside the review and surfaced in the admin dashboard.
 
-**How it works:** `cardiffnlp/twitter-roberta-base-sentiment-latest` fine-tuned on product reviews. The [CLS] token output feeds a two-layer classification head. Aspect-level analysis uses zero-shot prompting — the model is given a context-anchored prompt like "Regarding the bag durability: [review text]" and predicts sentiment for that specific aspect without needing separate aspect labels.
+**ML concepts:** Tokenisation (BPE subwords), [CLS] token aggregation, BERT fine-tuning, AdamW optimiser, warmup scheduler, gradient clipping, label smoothing, aspect-level zero-shot prompting.
 
-**Aspects:** durability, aesthetics, value, customization_quality, packaging
+**Model:** `cardiffnlp/twitter-roberta-base-sentiment-latest` + classification head
 
-**Output:**
-```json
+**Aspects analysed:**
+
+| Aspect | What it captures |
+|---|---|
+| `durability` | Material quality, stitching, longevity |
+| `aesthetics` | Design, colour, appearance |
+| `value` | Price vs quality perception |
+| `customization_quality` | Print quality, text accuracy |
+| `packaging` | Unboxing experience, box condition |
+
+**Training:**
+
+```bash
+# Bootstrap dataset from HuggingFace (yelp_polarity)
+python scripts/label_reviews.py
+
+# Train
+python feature_3_sentiment/train.py
+
+# Evaluate
+python feature_3_sentiment/evaluate.py
+```
+
+**API endpoint:**
+
+```
+POST /sentiment/analyze
+Content-Type: application/json
+Body: { "text": "...", "run_aspects": true, "product_id": "..." }
+
+Response:
 {
-  "overall": { "label": "positive", "confidence": 0.89 },
+  "overall": { "label": "positive", "confidence": 0.89, "scores": {...} },
   "aspects": {
     "durability":           { "label": "positive",  "confidence": 0.82 },
+    "aesthetics":           { "label": "positive",  "confidence": 0.91 },
+    "value":                { "label": "neutral",   "confidence": 0.67 },
+    "customization_quality":{ "label": "positive",  "confidence": 0.88 },
     "packaging":            { "label": "negative",  "confidence": 0.74 }
   },
   "summary": "Positive: aesthetics, durability. Needs work: packaging."
 }
+
+POST /sentiment/batch
+Body: { "texts": ["review 1", "review 2", ...] }
 ```
 
-**Concepts learned:** BPE tokenisation, [CLS] aggregation, BERT fine-tuning, AdamW, warmup scheduler, gradient clipping, zero-shot aspect prompting.
+**Integration:** Called async after review submission — does not block the API response. Results written back to `Review.sentimentLabel`, `Review.sentimentAspects`.
 
 ---
 
 ### Feature 4 — Customer segmentation
 
-**Status:** ✅ Complete
+**Status:** ✅ Implemented
 
-All customers are clustered into four behaviour-based segments weekly. The segment label is stored on the User record and read by the dynamic pricing and recommender features to personalise their outputs.
+**What it does:** All customers are clustered into four segments weekly based on their purchase history. Segment labels are written to the User table and read by the dynamic pricing and recommender features.
 
-**How it works:** Three numbers — Recency (days since last order), Frequency (total orders), and Monetary (total spend) — are computed per user from order history. StandardScaler normalises all three to equal influence. K-Means groups users into 4 clusters. Clusters are labelled by ranking their centroids on a composite score.
+**ML concepts:** RFM feature engineering, StandardScaler (why distance models need normalisation), K-Means algorithm, elbow method, silhouette score, cluster labelling by centroid analysis, model persistence with pickle.
 
 **Segments:**
 
-| Segment | Profile | Action |
-|---|---|---|
-| Champions | Recent, frequent, high spend | VIP treatment, early access |
-| Loyal | Regular buyers, moderate spend | Loyalty rewards |
-| Occasional | Infrequent, moderate value | Re-engagement |
-| At risk | Haven't bought in a while | Win-back offers |
+| Segment | Recency | Frequency | Monetary | Action |
+|---|---|---|---|---|
+| Champions | Low (recent) | High | High | VIP treatment, early access |
+| Loyal | Medium | High | Medium | Reward programme |
+| Occasional | High | Low | Low | Re-engagement campaigns |
+| At risk | Very high | Very low | Low | Win-back discounts |
 
-**Concepts learned:** RFM feature engineering, StandardScaler, K-Means, elbow method, silhouette score, cluster labelling, pickle persistence.
+**Run segmentation:**
+
+```bash
+# Full retrain + write segments to DB
+python scripts/run_segmentation.py --train
+
+# Use existing model, just re-assign (faster, weekly cron)
+python scripts/run_segmentation.py --predict
+```
+
+**API endpoints:**
+
+```
+POST /segment/predict
+Body: { "recency": 5, "frequency": 8, "monetary": 12000 }
+
+POST /segment/predict-from-orders
+Body: { "user_id": "...", "orders": [{created_at, total_amount, status}] }
+
+Response:
+{
+  "segment": "Champions",
+  "cluster_id": 2,
+  "centroid_distance": 0.38,
+  "rfm": { "recency": 5, "frequency": 8, "monetary": 12000 }
+}
+```
+
+**Cron schedule:** Every Sunday at 02:00 UTC — re-runs on full order history, updates all user segments.
 
 ---
 
 ### Feature 5 — Demand forecasting
 
-**Status:** ✅ Complete
+**Status:** 🔲 Planned
 
-Predicts daily bag demand per product type for the next 30 days. Drives inventory planning — how much textile waste to procure, how many bags to produce.
+**What it does:** Predicts weekly bag demand per product type for the next 30 days. Drives inventory planning and textile waste procurement decisions.
 
-**How it works:** Two-phase approach. Phase 1 (MVP, less than 6 months of data) uses Facebook Prophet which separates demand into trend + weekly seasonality + Indian holidays. Phase 2 (after 6 months of data) upgrades to an LSTM that learns patterns from sliding windows of the past 30 days to predict the next 7 — repeated recursively for a 30-day horizon.
+**ML concepts:** Time series stationarity, seasonality decomposition, autocorrelation, ARIMA baseline, Facebook Prophet, LSTM sequence modelling, time-series train/val split (no random split), MAPE / RMSE evaluation.
 
-**Key detail:** Time series data must never be shuffled. Train/val split is always chronological — train on the oldest data, validate on the most recent.
+**Two-phase approach:**
 
-**Output:**
-```json
-{
-  "product_type": "BASIC",
-  "forecasts": [
-    { "date": "2026-03-22", "predicted": 8.4, "lower": 5.1, "upper": 11.7 }
-  ]
-}
+| Phase | Model | When to use |
+|---|---|---|
+| Phase 1 (MVP) | Facebook Prophet | < 6 months of order data |
+| Phase 2 | LSTM (PyTorch) | ≥ 6 months — captures complex seasonal patterns |
+
+**API endpoint:**
+
 ```
-
-**Concepts learned:** Trend/seasonality decomposition, Prophet, LSTM, sliding window sequences, MinMaxScaler, chronological split, autoregressive forecasting, MAPE/RMSE/MAE.
+GET /forecast/{product_type}?horizon=30
+Response: { "forecasts": [{ "date": "2025-01-15", "predicted": 23, "lower": 18, "upper": 28 }] }
+```
 
 ---
 
 ### Feature 6 — Hybrid recommender
 
-**Status:** ✅ Complete
+**Status:** 🔲 Planned
 
-Personalised product recommendations on the product detail page, home page, and post-purchase emails. Solves the cold-start problem — new users with no history still get relevant recommendations.
+**What it does:** "You might also like" — personalised product recommendations shown on the product page and in post-purchase emails.
 
-**How it works:** Two signals fused with a weighted average.
+**ML concepts:** Collaborative filtering, matrix factorisation (TruncatedSVD), content-based filtering (cosine similarity on product features), cold-start problem, hybrid ensemble (alpha weighting), implicit feedback.
 
-Collaborative filtering (SVD): decomposes the user × product purchase matrix into latent factors. Users who bought similar things end up with similar vectors. Recommendation = find products whose vectors align with the user's.
+**Hybrid formula:**
 
-Content-based filtering: builds a feature vector per product from type, price tier, and material. Cosine similarity matrix captures which products are attribute-similar. New users who haven't bought anything get pure content-based results.
+```
+final_score = α × collaborative_score + (1 - α) × content_score
+```
 
-The mixing weight α is set automatically by the user's segment from Feature 4: Champions get α=0.75 (trust purchase history heavily), new users get α=0.0 (pure content).
+Where `α = 0.6` by default. Champions and Loyal segments get higher `α` (more personalised). New users with no history get `α = 0` (pure content-based).
 
-**Concepts learned:** Implicit feedback, sparse matrices, matrix factorisation, user/product latent vectors, one-hot encoding, content similarity, cold-start problem, hybrid ensemble, precision@K, recall@K.
+**API endpoint:**
+
+```
+POST /recommend
+Body: { "user_id": "...", "product_id": "...", "top_k": 8 }
+Response: { "recommendations": [{ product_id, name, score, reason }] }
+```
 
 ---
 
@@ -668,13 +547,32 @@ The mixing weight α is set automatically by the user's segment from Feature 4: 
 
 **Status:** 🔲 Planned
 
-Suggests adjusted prices per product per session based on demand signals, stock, seasonality, and user segment. Shown to admins for approval before going live.
+**What it does:** Suggests an adjusted price for each product per session based on demand signals, stock levels, seasonality, and the user's segment. Shown only to admins initially — they approve or override.
 
-**How it works:** XGBoost trained on historical price and demand data. Input features include base price, product type, stock level, day of week, festival season flag, user segment (from Feature 4), and rolling demand windows. SHAP explains every prediction — the admin can see that "the price is up 15% because it's Diwali week and stock is low."
+**ML concepts:** Gradient boosting (XGBoost), feature importance, price elasticity modelling, SHAP explainability (why did the model suggest this price?), regression evaluation (MAE, MAPE), guardrail constraints.
 
-**Guardrails:** Suggested price is clamped to [80%, 130%] of base price regardless of model output.
+**Input features:**
 
-**Concepts learned:** Gradient boosting, XGBoost, feature importance, SHAP explainability, price elasticity, regression metrics.
+| Feature | Description |
+|---|---|
+| `base_price` | Original listed price |
+| `product_type` | BASIC / PREMIUM / CUSTOMIZED |
+| `stock_level` | Units remaining |
+| `day_of_week` | 0–6 |
+| `is_festival_season` | Diwali, Christmas etc. |
+| `user_segment` | From Feature 4 |
+| `rolling_7d_demand` | Orders in last 7 days |
+| `rolling_30d_demand` | Orders in last 30 days |
+
+**Guardrails:** Suggested price is clamped to [80%, 130%] of base price. Model cannot recommend prices outside this range regardless of its output.
+
+**API endpoint:**
+
+```
+POST /pricing/suggest
+Body: { "product_id": "...", "user_id": "...", "context": {...} }
+Response: { "suggested_price": 1299, "base_price": 999, "delta_pct": 30, "top_driver": "festival" }
+```
 
 ---
 
@@ -682,14 +580,36 @@ Suggests adjusted prices per product per session based on demand signals, stock,
 
 **Status:** 🔲 Planned
 
-Quality control pipeline. Photographs of finished bags are run through an object detection model before shipment. Any detected defect holds the order for rework.
+**What it does:** Quality control — photographs of finished bags are run through an object detection model before shipment. Defects are flagged and the order is held for review.
 
-**How it works:** YOLOv8-nano fine-tuned on photos of bag defects. Unlike the classifier (which says "what is this?"), the detector says "where is the problem?" and draws a bounding box around it. Trained with the standard YOLO annotation format.
+**ML concepts:** Object detection vs image classification, YOLOv8 architecture, bounding boxes, IoU (Intersection over Union), NMS (non-maximum suppression), anchor boxes, mAP evaluation.
 
-**Defect classes:** stitch_error, colour_bleed, torn_fabric, shape_defect, zipper_fault
+**Defect classes detected:**
 
-**Output:**
-```json
+| Class | Description |
+|---|---|
+| `stitch_error` | Loose or broken stitching |
+| `colour_bleed` | Ink or dye bleeding outside design |
+| `torn_fabric` | Tears or holes in material |
+| `shape_defect` | Bag not holding correct form |
+| `zipper_fault` | Zip misaligned or not closing |
+
+**Training:**
+
+```bash
+# Fine-tune YOLOv8 nano (fastest to train, runs on CPU)
+yolo detect train data=feature_8_defect_detection/configs/dataset.yaml \
+  model=yolov8n.pt epochs=50 imgsz=640 batch=16
+```
+
+**API endpoint:**
+
+```
+POST /quality/inspect
+Content-Type: multipart/form-data
+Body: file (bag image)
+
+Response:
 {
   "pass": false,
   "grade": "fail",
@@ -699,148 +619,259 @@ Quality control pipeline. Photographs of finished bags are run through an object
 }
 ```
 
-**Concepts learned:** Object detection vs classification, YOLOv8, bounding boxes, IoU, non-maximum suppression, mAP evaluation.
+---
+
+## ML service API
+
+All routes follow the pattern `/{feature}/{action}`. Base URL in development: `http://localhost:8000`
+
+| Method | Endpoint | Feature | Description |
+|---|---|---|---|
+| POST | `/classify` | 1 | Classify textile image |
+| GET | `/classify/health` | 1 | Model health check |
+| POST | `/visual-search/by-image` | 2 | Search by uploaded image |
+| GET | `/visual-search/by-product/{id}` | 2 | More like this |
+| POST | `/visual-search/add-product` | 2 | Add product to index |
+| POST | `/sentiment/analyze` | 3 | Analyze single review |
+| POST | `/sentiment/batch` | 3 | Analyze multiple reviews |
+| POST | `/segment/predict` | 4 | Predict segment from RFM |
+| POST | `/segment/predict-from-orders` | 4 | Predict from order history |
+| GET | `/forecast/{type}` | 5 | Demand forecast |
+| POST | `/recommend` | 6 | Get recommendations |
+| POST | `/pricing/suggest` | 7 | Suggest dynamic price |
+| POST | `/quality/inspect` | 8 | Inspect bag for defects |
 
 ---
 
-## Deployment
+## Integration with backend
 
-### Three services, three platforms
+The Node.js backend communicates with the ML service through service files in `recyclabag-backend/src/services/`. Each ML feature has a corresponding service:
 
-| Service | Platform | URL pattern |
+```
+recyclabag-backend/src/services/
+├── mlClassifier.service.js     # Feature 1
+├── visualSearch.service.js     # Feature 2
+├── sentiment.service.js        # Feature 3 — called async after review save
+└── segmentation.service.js     # Feature 4 — called by weekly cron + pricing
+```
+
+The ML service URL is configured in the backend `.env`:
+
+```env
+ML_SERVICE_URL=http://localhost:8000          # development
+ML_SERVICE_URL=https://recyclabag-ml.onrender.com  # production
+```
+
+---
+
+## Model artefacts
+
+Model weights and indexes are not committed to Git. They live in cloud storage and are pulled at deploy time.
+
+| Artefact | Location | Size (approx) |
 |---|---|---|
-| Frontend | Vercel | `recyclabag.vercel.app` |
-| Backend | Render | `recyclabag-api.onrender.com` |
-| ML service | Render | `recyclabag-ml.onrender.com` |
+| `textile_v1.pt` | S3 / cloud storage | ~100MB |
+| `sentiment_v1.pt` | S3 / cloud storage | ~500MB |
+| `kmeans_model.pkl` | S3 / cloud storage | < 1MB |
+| `scaler.pkl` | S3 / cloud storage | < 1MB |
+| `bags_flat.faiss` | S3 / cloud storage | ~80MB |
+| `bags_metadata.json` | S3 / cloud storage | < 5MB |
+| `best.pt` (YOLOv8) | S3 / cloud storage | ~6MB |
 
-### Database
+Download script for deploy:
 
-PostgreSQL hosted on Supabase or Neon. Both offer a generous free tier. The same database is shared by the backend and the ML service (for pgvector writes).
+```bash
+python scripts/download_artifacts.py
+```
 
-### ML service startup command on Render
+---
+
+## Active learning loop
+
+Features 1 and 3 implement active learning — the models improve automatically using production data.
+
+```
+User uploads textile / submits review
+    ↓
+Model predicts with low confidence (< threshold)
+    ↓
+Sample flagged → stored in MlReviewQueue (PostgreSQL)
+    ↓
+Admin reviews via /api/admin/ml/review-queue
+    ↓
+True label assigned
+    ↓
+Sample added to training dataset
+    ↓
+Weekly retrain triggered when ≥ 50 new samples accumulate
+    ↓
+Model accuracy improves over time
+```
+
+---
+
+## Running the service
+
+### Development
+
+```bash
+# Start with hot reload
+uvicorn serve.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### Production (Render)
+
+Start command:
 
 ```bash
 python scripts/download_artifacts.py && uvicorn serve.main:app --host 0.0.0.0 --port 8000 --workers 2
 ```
 
-The `download_artifacts.py` script pulls model weights from S3/cloud storage before the server starts — weights are never committed to Git.
+### Run training scripts
 
-### Model artefacts storage
+```bash
+# Feature 1 — classifier
+python feature_1_classifier/train.py
 
-Large binary files (`.pt`, `.pkl`, `.faiss`) are stored in S3 or equivalent and pulled at deploy time.
+# Feature 2 — build FAISS index
+python scripts/build_visual_index.py
 
-| Artefact | Size |
-|---|---|
-| `textile_v1.pt` (ResNet-50 fine-tuned) | ~100MB |
-| `sentiment_v1.pt` (RoBERTa fine-tuned) | ~500MB |
-| `kmeans_model.pkl` + `scaler.pkl` | < 1MB |
-| `bags_flat.faiss` + `bags_metadata.json` | ~80MB |
-| `prophet_*.pkl` × 3 | ~10MB |
-| `svd_model.pkl` + `content_sim.npy` | ~5MB |
+# Feature 3 — sentiment
+python scripts/label_reviews.py      # prepare data first
+python feature_3_sentiment/train.py
+
+# Feature 4 — segmentation (weekly)
+python scripts/run_segmentation.py --train
+```
 
 ---
 
 ## Environment variables
 
-### recyclabag-backend/.env
-
 ```env
+# .env
+
+# PostgreSQL — same DB as backend (for pgvector writes)
 DATABASE_URL=postgresql://user:password@host:5432/recyclabag
-JWT_SECRET=your-secret-key-min-32-chars
-JWT_EXPIRES_IN=7d
-CLIENT_URL=http://localhost:3000
 
-CLOUDINARY_CLOUD_NAME=
-CLOUDINARY_API_KEY=
-CLOUDINARY_API_SECRET=
-
-RAZORPAY_KEY_ID=rzp_test_
-RAZORPAY_KEY_SECRET=
-
-ML_SERVICE_URL=http://localhost:8000
-```
-
-### recyclabag-frontend/.env.local
-
-```env
-NEXT_PUBLIC_API_URL=http://localhost:5000
-NEXT_PUBLIC_RAZORPAY_KEY=rzp_test_
-```
-
-### recyclabag-ml/.env
-
-```env
-DATABASE_URL=postgresql://user:password@host:5432/recyclabag
+# Backend API — for pulling order data and writing segment results
 BACKEND_API_URL=http://localhost:5000
-ADMIN_JWT_TOKEN=long-lived-admin-jwt-for-cron-jobs
+ADMIN_JWT_TOKEN=your-long-lived-admin-jwt
+
+# Cloud storage — for downloading model artefacts on deploy
+S3_BUCKET=recyclabag-ml-artifacts
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_REGION=ap-south-1
 ```
 
 ---
 
-## Development workflow
+## Gitignore rules
 
-### Branching
+```gitignore
+# All training data — never commit raw images or CSVs
+feature_1_classifier/data/
+feature_2_visual_search/indexes/
+feature_3_sentiment/data/
+feature_4_segmentation/data/
+feature_5_forecasting/data/
+feature_6_recommender/data/
+feature_7_pricing/data/
+feature_8_defect_detection/data/
 
-```
-main          ← production only — CI deploys from here
-dev           ← integration branch — all PRs target this
-feat/auth
-feat/products
-feat/customisation
-feat/orders
-feat/ml-integration
-```
+# All model weights — large binary files, stored in S3
+feature_1_classifier/weights/
+feature_3_sentiment/weights/
+feature_4_segmentation/weights/
+feature_5_forecasting/weights/
+feature_6_recommender/weights/
+feature_7_pricing/weights/
+feature_8_defect_detection/weights/
+feature_8_defect_detection/runs/
 
-### Dependency order — who starts first
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+dist/
 
-```
-Day 1   Dev 1 starts backend foundation + Prisma schema
-        ML dev starts DevOps setup
+# Notebooks — don't commit output cells
+.ipynb_checkpoints/
 
-Day 2   Dev 1 signals "DB migration succeeded + auth routes working"
-        Dev 2 and Dev 3 start their backend slices
-        Dev 4 starts Next.js init + HTML/CSS conversion
-
-Day 4   Dev 2 signals "products API working"
-        Dev 4 wires product pages to real data
-
-Day 5   Dev 3 signals "customisation API working"
-        Dev 4 wires cart and customisation pages
-
-Day 7   Dev 4 wires checkout once orders/payments API is ready
-        ML dev wires ML service endpoints to backend services
-```
-
-### Running the weekly ML jobs manually (until cron is set up)
-
-```bash
-# Segmentation — assign customer segments
-python scripts/run_segmentation.py --train
-
-# Forecasting — refresh demand forecasts
-python scripts/run_forecast.py --all --synthetic
-
-# Recommender — rebuild interaction matrix
-python scripts/build_recommender.py --synthetic
+# Environment
+.env
 ```
 
 ---
 
-## What gets better over time
+## ML concepts index
 
-This is not a static product. Every user action improves it:
+A quick reference of every ML concept used in this project and which feature teaches it.
 
-| User action | What it improves |
-|---|---|
-| Places an order | Demand forecast accuracy (Feature 5) |
-| Places an order | Recommender collaborative signal (Feature 6) |
-| Leaves a review | Sentiment model training data (Feature 3) |
-| Segment changes | Recommender personalisation (Feature 6) |
-| Segment changes | Dynamic pricing accuracy (Feature 7) |
-| Admin labels a textile | Classifier accuracy (Feature 1 active learning) |
-
-After 3 months of real orders the ML models will be meaningfully better than on launch day — trained on actual RecyclaBag customer behaviour rather than synthetic bootstrap data.
+| Concept | Feature | File |
+|---|---|---|
+| Transfer learning | 1, 2 | `feature_1_classifier/model.py` |
+| CNN fine-tuning | 1 | `feature_1_classifier/train.py` |
+| Data augmentation | 1 | `feature_1_classifier/dataset.py` |
+| Class imbalance (WeightedRandomSampler) | 1 | `feature_1_classifier/dataset.py` |
+| Mixed precision training | 1 | `feature_1_classifier/train.py` |
+| Cosine LR scheduling | 1 | `feature_1_classifier/train.py` |
+| Gradual unfreezing | 1 | `feature_1_classifier/model.py` |
+| Active learning | 1, 3 | `feature_1_classifier/active_learning.py` |
+| Confusion matrix + F1 | 1, 3 | `*/evaluate.py` |
+| Feature extraction (vs classification) | 2 | `feature_2_visual_search/extractor.py` |
+| L2 normalisation | 2 | `feature_2_visual_search/extractor.py` |
+| Cosine similarity via dot product | 2 | `feature_2_visual_search/extractor.py` |
+| FAISS index types | 2 | `feature_2_visual_search/index_builder.py` |
+| Approximate nearest neighbour | 2 | `feature_2_visual_search/searcher.py` |
+| Incremental index updates | 2 | `feature_2_visual_search/index_updater.py` |
+| pgvector filtered search | 2 | `feature_2_visual_search/pgvector_store.py` |
+| BPE tokenisation | 3 | `feature_3_sentiment/dataset.py` |
+| [CLS] token aggregation | 3 | `feature_3_sentiment/model.py` |
+| BERT fine-tuning | 3 | `feature_3_sentiment/train.py` |
+| AdamW (proper weight decay) | 3 | `feature_3_sentiment/train.py` |
+| Warmup LR scheduler | 3 | `feature_3_sentiment/train.py` |
+| Gradient clipping | 3 | `feature_3_sentiment/train.py` |
+| Aspect-level zero-shot prompting | 3 | `feature_3_sentiment/aspect_analyzer.py` |
+| RFM feature engineering | 4 | `feature_4_segmentation/rfm_builder.py` |
+| StandardScaler | 4 | `feature_4_segmentation/segmenter.py` |
+| K-Means algorithm | 4 | `feature_4_segmentation/segmenter.py` |
+| Elbow method | 4 | `feature_4_segmentation/evaluate.py` |
+| Silhouette score | 4 | `feature_4_segmentation/evaluate.py` |
+| Cluster labelling by centroid | 4 | `feature_4_segmentation/segmenter.py` |
+| Model persistence (pickle) | 4 | `feature_4_segmentation/segmenter.py` |
+| Time series stationarity | 5 | `feature_5_forecasting/preprocessor.py` |
+| Facebook Prophet | 5 | `feature_5_forecasting/prophet_model.py` |
+| LSTM sequence modelling | 5 | `feature_5_forecasting/lstm_model.py` |
+| MAPE / RMSE evaluation | 5 | `feature_5_forecasting/evaluate.py` |
+| Collaborative filtering | 6 | `feature_6_recommender/collaborative.py` |
+| Matrix factorisation (SVD) | 6 | `feature_6_recommender/collaborative.py` |
+| Content-based filtering | 6 | `feature_6_recommender/content_based.py` |
+| Cold-start problem | 6 | `feature_6_recommender/hybrid.py` |
+| Hybrid ensemble | 6 | `feature_6_recommender/hybrid.py` |
+| Gradient boosting (XGBoost) | 7 | `feature_7_pricing/pricing_model.py` |
+| Feature importance | 7 | `feature_7_pricing/pricing_model.py` |
+| SHAP explainability | 7 | `feature_7_pricing/pricing_model.py` |
+| Price elasticity | 7 | `feature_7_pricing/feature_engineering.py` |
+| Object detection (YOLOv8) | 8 | `feature_8_defect_detection/predict.py` |
+| Bounding boxes + IoU | 8 | `feature_8_defect_detection/evaluate.py` |
+| Non-maximum suppression | 8 | YOLOv8 internals |
+| mAP evaluation | 8 | `feature_8_defect_detection/evaluate.py` |
 
 ---
 
-*RecyclaBag — turning textile waste into fashion, one bag at a time.*
+## Skill progression
+
+| Month | Features built | Paradigms mastered |
+|---|---|---|
+| 1 | 1 + 2 | Supervised CV, transfer learning, embedding spaces |
+| 2 | 3 + 4 | NLP fine-tuning, unsupervised clustering |
+| 3 | 5 + 2 upgrade | Time series, pgvector production search |
+| 4 | 6 + 7 | Recommendation systems, gradient boosting, explainability |
+| 5 | 8 | Object detection, localisation |
+
+---
+
+*Built as part of the RecyclaBag startup MVP. ML service maintained by the ML developer.*

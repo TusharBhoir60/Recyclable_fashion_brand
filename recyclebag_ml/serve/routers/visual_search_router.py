@@ -3,7 +3,12 @@
 from fastapi import APIRouter, File, UploadFile, HTTPException, Query
 from fastapi.responses import JSONResponse
 import sys
-sys.path.append('search/visual')
+from pathlib import Path
+
+ROOT_DIR = Path(__file__).resolve().parents[2]
+FEATURE2_DIR = ROOT_DIR / 'feature2'
+if str(FEATURE2_DIR) not in sys.path:
+    sys.path.append(str(FEATURE2_DIR))
 
 from searcher import VisualSearcher
 

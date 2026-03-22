@@ -3,7 +3,12 @@
 from fastapi import APIRouter, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
 import sys
-sys.path.append('classifiers/textile')
+from pathlib import Path
+
+ROOT_DIR = Path(__file__).resolve().parents[2]
+FEATURE1_DIR = ROOT_DIR / 'feature1'
+if str(FEATURE1_DIR) not in sys.path:
+    sys.path.append(str(FEATURE1_DIR))
 
 from predict import TextileClassifier
 from active_learning import flag_for_review
