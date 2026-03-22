@@ -1,0 +1,31 @@
+# feature_4_segmentation/configs/segmentation_config.yaml
+
+rfm:
+  snapshot_date: "auto"        # "auto" = today's date at runtime
+  recency_unit: days           # unit for recency calculation
+
+kmeans:
+  n_clusters: 4                # Champions, Loyal, Occasional, At risk
+  random_state: 42
+  n_init: 20                   # run 20 times, pick best — prevents bad init
+  max_iter: 500
+
+# Segment names assigned after clustering based on centre characteristics
+# Order matters: ranked lowest → highest combined RFM score
+segment_names:
+  - "At risk"
+  - "Occasional"
+  - "Loyal"
+  - "Champions"
+
+evaluation:
+  k_range_min: 2
+  k_range_max: 9               # test k=2 through k=8 for elbow plot
+
+data:
+  rfm_csv: "feature_4_segmentation/data/processed/rfm.csv"
+
+weights:
+  kmeans_model: "feature_4_segmentation/weights/kmeans_model.pkl"
+  scaler:       "feature_4_segmentation/weights/scaler.pkl"
+  cluster_map:  "feature_4_segmentation/weights/cluster_map.json"

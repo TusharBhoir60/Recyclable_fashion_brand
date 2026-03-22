@@ -1,0 +1,47 @@
+# feature_5_forecasting/configs/forecast_config.yaml
+
+product_types:
+  - BASIC
+  - PREMIUM
+  - CUSTOMIZED
+
+data:
+  processed_dir: "feature_5_forecasting/data/processed"
+  # filename pattern: {type}_daily.csv  e.g. basic_daily.csv
+  # columns required: ds (date), y (order count)
+
+prophet:
+  weekly_seasonality: true
+  yearly_seasonality: false   # set true after 1+ year of data
+  daily_seasonality:  false
+  changepoint_prior_scale: 0.05   # flexibility of trend — 0.05 is conservative
+  seasonality_prior_scale: 10.0
+  country_holidays: "IN"          # adds Diwali, Holi, etc. automatically
+  forecast_horizon_days: 30
+
+lstm:
+  lookback_window: 30    # use last 30 days to predict next N days
+  forecast_steps:  7     # predict 7 days at a time
+  hidden_size:     64
+  num_layers:      2
+  dropout:         0.2
+  epochs:          50
+  batch_size:      32
+  lr:              0.001
+  train_split:     0.8   # 80% train, 20% val — always chronological
+
+evaluation:
+  metrics: [mape, rmse, mae]
+  # MAPE: mean absolute percentage error — intuitive (e.g. "off by 12%")
+  # RMSE: root mean squared error — penalises large errors more
+  # MAE:  mean absolute error — easy to interpret in units (bags/day)
+
+weights:
+  dir: "feature_5_forecasting/weights"
+
+# Which model to use per product type
+# Switch to "lstm" after 6+ months of real order data
+active_model:
+  BASIC:      "prophet"
+  PREMIUM:    "prophet"
+  CUSTOMIZED: "prophet"

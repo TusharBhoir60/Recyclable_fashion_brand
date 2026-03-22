@@ -1,0 +1,37 @@
+# feature_3_sentiment/configs/sentiment_config.yaml
+
+model:
+  base_checkpoint: "cardiffnlp/twitter-roberta-base-sentiment-latest"
+  num_labels: 3
+  dropout: 0.1
+  max_length: 128
+
+classes:
+  overall:
+    - negative
+    - neutral
+    - positive
+  aspects:
+    - durability
+    - aesthetics
+    - value
+    - customization_quality
+    - packaging
+
+data:
+  train_csv: "data/processed/train.csv"
+  val_csv: "data/processed/val.csv"
+
+training:
+  epochs: 5
+  batch_size: 16
+  lr: 0.00002
+  weight_decay: 0.01
+  warmup_ratio: 0.1
+  max_grad_norm: 1.0
+  checkpoint_dir: "weights"
+  early_stopping_patience: 3
+
+inference:
+  high_confidence: 0.805
+  low_confidence: 0.55

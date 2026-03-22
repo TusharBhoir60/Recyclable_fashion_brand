@@ -18,3 +18,23 @@ dist/
 
 # Env
 .env
+
+# add to existing .gitignore
+feature_3_sentiment/data/
+feature_3_sentiment/weights/
+
+feature_4_segmentation/data/
+feature_4_segmentation/weights/
+
+feature_5_forecasting/data/
+feature_5_forecasting/weights/
+
+feature_6_recommender/data/
+feature_6_recommender/weights/
+
+# Large local datasets (keep out of git history)
+amazon-fine-food-reviews.zip
+amazon-fine-food-reviews/
+
+
+.venv1/

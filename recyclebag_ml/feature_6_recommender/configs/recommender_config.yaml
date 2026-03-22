@@ -1,0 +1,39 @@
+# feature_6_recommender/configs/recommender_config.yaml
+
+collaborative:
+  n_factors: 50          # latent dimensions in SVD
+  # More factors = more expressive but slower and risks overfitting
+  # 50 is a safe default for < 10,000 users
+
+content:
+  # Which product fields contribute to feature vector
+  use_type:       true   # BASIC / PREMIUM / CUSTOMIZED  (one-hot)
+  use_price_bin:  true   # price bucketed into 5 bins
+  use_material:   true   # from textile classifier result
+  # Weights: how much each field contributes to similarity
+  type_weight:     2.0
+  price_weight:    1.5
+  material_weight: 1.0
+
+hybrid:
+  # α per segment: weight for collaborative vs content
+  # 0.0 = pure content  |  1.0 = pure collaborative
+  alpha_by_segment:
+    Champions:  0.75
+    Loyal:      0.65
+    Occasional: 0.40
+    "At risk":  0.35
+    New:        0.00   # no history — pure content
+
+  default_alpha: 0.50   # fallback when segment is unknown
+  top_k: 8              # items to return
+
+data:
+  interactions_csv: "feature_6_recommender/data/processed/interactions.csv"
+  products_csv:     "feature_6_recommender/data/processed/products.csv"
+
+weights:
+  svd_model:      "feature_6_recommender/weights/svd_model.pkl"
+  content_sim:    "feature_6_recommender/weights/content_sim.npy"
+  product_index:  "feature_6_recommender/weights/product_index.json"
+  user_index:     "feature_6_recommender/weights/user_index.json"
