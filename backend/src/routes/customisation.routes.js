@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const ctrl   = require('../controller/customization.controller');
+const ctrl   = require('../controller/cusomisation.controller');
 const auth   = require('../middleware/auth.middleware');
 const upload = require('../middleware/upload.middleware');
 
