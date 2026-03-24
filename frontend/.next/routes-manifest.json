@@ -1,0 +1,153 @@
+{
+  "version": 3,
+  "pages404": true,
+  "appType": "pages",
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "priority": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    }
+  ],
+  "headers": [],
+  "onMatchHeaders": [],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [
+      {
+        "source": "/index.html",
+        "destination": "/",
+        "regex": "^/index\\.html(?:/)?$"
+      },
+      {
+        "source": "/login.html",
+        "destination": "/login",
+        "regex": "^/login\\.html(?:/)?$"
+      },
+      {
+        "source": "/signup.html",
+        "destination": "/signup",
+        "regex": "^/signup\\.html(?:/)?$"
+      },
+      {
+        "source": "/dashboard.html",
+        "destination": "/dashboard",
+        "regex": "^/dashboard\\.html(?:/)?$"
+      },
+      {
+        "source": "/shop.html",
+        "destination": "/shop",
+        "regex": "^/shop\\.html(?:/)?$"
+      },
+      {
+        "source": "/sell.html",
+        "destination": "/sell",
+        "regex": "^/sell\\.html(?:/)?$"
+      },
+      {
+        "source": "/orders.html",
+        "destination": "/orders",
+        "regex": "^/orders\\.html(?:/)?$"
+      },
+      {
+        "source": "/profile.html",
+        "destination": "/profile",
+        "regex": "^/profile\\.html(?:/)?$"
+      },
+      {
+        "source": "/cart.html",
+        "destination": "/cart",
+        "regex": "^/cart\\.html(?:/)?$"
+      },
+      {
+        "source": "/checkout.html",
+        "destination": "/checkout",
+        "regex": "^/checkout\\.html(?:/)?$"
+      },
+      {
+        "source": "/seller-dashboard.html",
+        "destination": "/seller-dashboard",
+        "regex": "^/seller-dashboard\\.html(?:/)?$"
+      },
+      {
+        "source": "/product-detail.html",
+        "destination": "/product-detail",
+        "regex": "^/product-detail\\.html(?:/)?$"
+      },
+      {
+        "source": "/admin/dashboard.html",
+        "destination": "/admin/dashboard",
+        "regex": "^/admin/dashboard\\.html(?:/)?$"
+      },
+      {
+        "source": "/admin/manage-users.html",
+        "destination": "/admin/manage-users",
+        "regex": "^/admin/manage-users\\.html(?:/)?$"
+      },
+      {
+        "source": "/admin/manage-products.html",
+        "destination": "/admin/manage-products",
+        "regex": "^/admin/manage-products\\.html(?:/)?$"
+      },
+      {
+        "source": "/admin/manage-orders.html",
+        "destination": "/admin/manage-orders",
+        "regex": "^/admin/manage-orders\\.html(?:/)?$"
+      },
+      {
+        "source": "/admin/earnings.html",
+        "destination": "/admin/earnings",
+        "regex": "^/admin/earnings\\.html(?:/)?$"
+      },
+      {
+        "source": "/admin/reviews.html",
+        "destination": "/admin/reviews",
+        "regex": "^/admin/reviews\\.html(?:/)?$"
+      }
+    ],
+    "fallback": []
+  },
+  "dynamicRoutes": [
+    {
+      "page": "/[[...slug]]",
+      "regex": "^(?:/(.+?))?(?:/)?$",
+      "routeKeys": {
+        "nxtPslug": "nxtPslug"
+      },
+      "namedRegex": "^(?:/(?<nxtPslug>.+?))?(?:/)?$"
+    }
+  ],
+  "staticRoutes": [],
+  "dataRoutes": [
+    {
+      "page": "/[[...slug]]",
+      "routeKeys": {
+        "nxtPslug": "nxtPslug"
+      },
+      "dataRouteRegex": "^/_next/data/nSi82JQ\\-LGkdo8eA2V0\\-0(?:/(.+?))?\\.json$",
+      "namedDataRouteRegex": "^/_next/data/nSi82JQ\\-LGkdo8eA2V0\\-0(?:/(?<nxtPslug>.+?))?\\.json$"
+    }
+  ],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments",
+    "clientParamParsing": false,
+    "dynamicRSCPrerender": false
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}

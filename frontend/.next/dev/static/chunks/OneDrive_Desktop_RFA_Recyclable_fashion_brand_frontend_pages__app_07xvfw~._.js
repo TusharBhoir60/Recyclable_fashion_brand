@@ -1,0 +1,5 @@
+(globalThis["TURBOPACK_CHUNK_LISTS"] || (globalThis["TURBOPACK_CHUNK_LISTS"] = [])).push({
+    script: typeof document === "object" ? document.currentScript : undefined,
+    chunks: ["static/chunks/OneDrive_Desktop_RFA_Recyclable_fashion_brand_frontend_script_12gvl4..js","static/chunks/08fx_next_dist_compiled_0aesupi._.js","static/chunks/08fx_next_dist_shared_lib_0ikvcux._.js","static/chunks/08fx_next_dist_client_11wj0e9._.js","static/chunks/08fx_next_dist_0m-46i8._.js","static/chunks/08fx_react-dom_0t-6-op._.js","static/chunks/08fx_0x.2ssw._.js","static/chunks/[root-of-the-server]__0axswms._.js","static/chunks/OneDrive_Desktop_RFA_Recyclable_fashion_brand_frontend_0xmvxwk._.css"],
+    source: "entry"
+});

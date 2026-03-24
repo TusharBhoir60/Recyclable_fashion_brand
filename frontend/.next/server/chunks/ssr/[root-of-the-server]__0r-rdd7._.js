@@ -1,0 +1,3 @@
+module.exports=[8171,(a,b,c)=>{b.exports=a.x("react/jsx-runtime",()=>require("react/jsx-runtime"))},7669,(a,b,c)=>{b.exports=a.x("react",()=>require("react"))},4373,a=>{"use strict";var b=a.i(8171),c=a.i(7669);a.s(["default",0,function({Component:d,pageProps:e}){return(0,c.useEffect)(()=>{a.A(416).then(()=>{document.dispatchEvent(new Event("DOMContentLoaded"))})},[]),(0,b.jsx)(d,{...e})}])},416,a=>{a.v(b=>Promise.all(["server/chunks/ssr/OneDrive_Desktop_RFA_Recyclable_fashion_brand_frontend_script_0au~-55.js"].map(b=>a.l(b))).then(()=>b(5100)))}];
+
+//# sourceMappingURL=%5Broot-of-the-server%5D__0r-rdd7._.js.map

@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 10, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/srishti%20chaudhari/OneDrive/Desktop/RFA/Recyclable_fashion_brand/frontend/pages/_app.tsx"],"sourcesContent":["import type { AppProps } from \"next/app\";\nimport { useEffect } from \"react\";\nimport \"../style.css\";\nimport \"../admin/admin-style.css\";\n\nexport default function App({ Component, pageProps }: AppProps) {\n  useEffect(() => {\n    import(\"../script.js\").then(() => {\n      document.dispatchEvent(new Event(\"DOMContentLoaded\"));\n    });\n  }, []);\n\n  return <Component {...pageProps} />;\n}\n"],"names":["App","Component","pageProps","then","document","dispatchEvent","Event"],"mappings":";;;;;AACA;;;;;AAIe,SAASA,IAAI,EAAEC,SAAS,EAAEC,SAAS,EAAY;IAC5D,IAAA,gHAAS,EAAC;QACR,uIAAuBC,IAAI,CAAC;YAC1BC,SAASC,aAAa,CAAC,IAAIC,MAAM;QACnC;IACF,GAAG,EAAE;IAEL,qBAAO,qKAACL;QAAW,GAAGC,SAAS;;;;;;AACjC"}}]
+}
