@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 3, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/srishti%20chaudhari/OneDrive/Desktop/RFA/Recyclable_fashion_brand/frontend/node_modules/next/head.js"],"sourcesContent":["module.exports = require('./dist/shared/lib/head')\n"],"names":["module","exports"],"mappings":"AAAAA,OAAOC,OAAO","ignoreList":[0]}},
-    {"offset": {"line": 7, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/srishti%20chaudhari/OneDrive/Desktop/RFA/Recyclable_fashion_brand/frontend/node_modules/next/script.js"],"sourcesContent":["module.exports = require('./dist/client/script')\n"],"names":["module","exports"],"mappings":"AAAAA,OAAOC,OAAO","ignoreList":[0]}}]
-}
