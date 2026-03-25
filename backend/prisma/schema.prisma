@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum CustomerSegment {
+  NEW
+  REGULAR
+  VIP
+}
+
+enum ProductType {
+  BASIC
+  PREMIUM
+  CUSTOMIZED
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      UserRole @default(USER)
+  segment   CustomerSegment?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders  Order[]
+  reviews Review[]
+}
+
+model Product {
+  id          String      @id @default(cuid())
+  name        String
+  description String
+  type        ProductType
+  basePrice   Float
+  stock       Int
+  images      String[]
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  reviews    Review[]
+  orderItems OrderItem[]
+}
+
+model Customization {
+  id          String    @id @default(cuid())
+  textContent String?
+  imageUrl    String?
+  font        String?
+  color       String?
+  position    String?
+  extraCharge Float     @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  orderItems OrderItem[]
+}
+
+model Order {
+  id             String      @id @default(cuid())
+  userId         String
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status         OrderStatus @default(PENDING)
+  totalAmount    Float
+  shippingAddress Json
+  razorpayOrderId String?
+  paymentId      String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  items OrderItem[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id              String        @id @default(cuid())
+  orderId         String
+  order           Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId       String
+  product         Product       @relation(fields: [productId], references: [id], onDelete: Restrict)
+  customizationId String?
+  customization   Customization? @relation(fields: [customizationId], references: [id], onDelete: SetNull)
+  quantity        Int
+  unitPrice       Float
+
+  @@index([orderId])
+  @@index([productId])
+  @@index([customizationId])
+}
+
+model Review {
+  id                String   @id @default(cuid())
+  productId         String
+  product           Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  text              String
+  rating            Int
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  sentimentLabel    String?
+  sentimentScore    Float?
+  sentimentAspects  Json?
+  sentimentSummary  String?
+  sentimentAnalyzed Boolean  @default(false)
+
+  @@index([productId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model MlReviewQueue {
+  id         String   @id @default(cuid())
+  imageUrl   String?
+  predictedLabel String?
+  confidence Float?
+
+  trueLabel  String?
+  reviewed   Boolean  @default(false)
+  reviewedAt DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([reviewed])
+  @@index([createdAt])
+}
