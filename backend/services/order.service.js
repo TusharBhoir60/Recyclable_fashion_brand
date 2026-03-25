@@ -1,8 +1,14 @@
 // services/order.service.js
 
+const { verifyToken } = require('./auth.middleware');
+
 let orders = [];
 
-function createOrder(userId, product, customization) {
+// 🔐 Create Order
+function createOrder(token, userId, product, customization) {
+  const user = verifyToken(token);
+  if (!user) return "Unauthorized ❌";
+
   let totalPrice = product.basePrice;
 
   if (customization?.text) totalPrice += 100;
@@ -21,7 +27,11 @@ function createOrder(userId, product, customization) {
   return order;
 }
 
-function getAllOrders() {
+// 🔐 Get All Orders
+function getAllOrders(token) {
+  const user = verifyToken(token);
+  if (!user) return "Unauthorized ❌";
+
   return orders;
 }
 

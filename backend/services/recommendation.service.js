@@ -1,7 +1,11 @@
-// services/recommendation.service.js
+const { verifyToken } = require('./auth.middleware');
 
-function recommendProducts(products) {
-  return products.slice(0, 2); // simple logic
+function recommendProducts(token, products) {
+  const user = verifyToken(token);
+  if (!user) return "Unauthorized ❌";
+
+  // simple logic: return first product
+  return products.slice(0, 1);
 }
 
 module.exports = {
