@@ -1,5 +1,5 @@
 const prisma                   = require('../utils/prisma');
-const { uploadBuffer }         = require('../utils/cloudinary');
+const { uploadBuffer }         = require('../utils/claudinary');
 const { calculateExtraCharge } = require('../utils/pricecalculator');
 
 async function createCustomisation({ textContent, font, color, position, file }) {
