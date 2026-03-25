@@ -4,11 +4,11 @@ const cors    = require('cors');
 
 const authRoutes          = require('./routes/auth.routes');
 const productRoutes       = require('./routes/product.routes');
-const customizationRoutes = require('./routes/customization.routes');
+const customizationRoutes = require('./routes/customisation.routes');
 const orderRoutes         = require('./routes/order.routes');
 const paymentRoutes       = require('./routes/payment.routes');
 const reviewRoutes        = require('./routes/review.routes');
-const searchRoutes        = require('./routes/search.routes');
+const searchRoutes        = require('./routes/search.route');
 const adminRoutes         = require('./routes/admin.routes');
 
 const app = express();
