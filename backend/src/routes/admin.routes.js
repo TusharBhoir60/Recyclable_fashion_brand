@@ -2,7 +2,7 @@ const router    = require('express').Router();
 const prisma    = require('../utils/prisma');
 const auth      = require('../middleware/auth.middleware');
 const isAdmin   = require('../middleware/isadmin.middleware');
-const forecast  = require('../services/forecast.services');
+const forecast  = require('../services/forecast.service');
 const analytics = require('../services/analytics.service');
 
 // Every admin route requires JWT + ADMIN role

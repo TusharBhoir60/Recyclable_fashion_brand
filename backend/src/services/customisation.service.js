@@ -1,6 +1,6 @@
 const prisma                   = require('../utils/prisma');
-const { uploadBuffer }         = require('../utils/claudinary');
 const { calculateExtraCharge } = require('../utils/pricecalculator');
+const { uploadBuffer } = require('../utils/cloudinary');
 
 async function createCustomisation({ textContent, font, color, position, file }) {
   let imageUrl = null;

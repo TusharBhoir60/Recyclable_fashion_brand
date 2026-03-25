@@ -1,5 +1,5 @@
 const prisma    = require('../utils/prisma');
-const sentiment = require('../services/sentiment.services');
+const sentiment = require('../services/sentiment.service');
 
 async function createReview(req, res, next) {
   try {

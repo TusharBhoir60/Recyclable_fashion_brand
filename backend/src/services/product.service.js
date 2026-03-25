@@ -1,6 +1,6 @@
-const prisma           = require('../utils/prisma');
-const { uploadBuffer } = require('../utils/claudinary');
-const visualSearch     = require('./visualsearch.service');
+const prisma = require('../utils/prisma');
+const { uploadBuffer } = require('../utils/cloudinary');
+const visualSearch = require('./visualsearch.service');
 
 async function listProducts({ type, page = 1, limit = 12 }) {
   const where = { isActive: true };
