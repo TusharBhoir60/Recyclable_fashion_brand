@@ -1,11 +1,12 @@
 const jwt    = require('jsonwebtoken');
 const crypto = require('crypto');
+const env = require('../config/env');
 
-const ACCESS_SECRET  = process.env.JWT_SECRET;
-const ACCESS_EXPIRES = process.env.JWT_EXPIRES_IN         || '15m';
+const ACCESS_SECRET  = env.jwt.accessSecret;
+const ACCESS_EXPIRES = env.jwt.accessExpiresIn;
 
-const REFRESH_SECRET  = process.env.JWT_REFRESH_SECRET;
-const REFRESH_EXPIRES = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
+const REFRESH_SECRET  = env.jwt.refreshSecret;
+const REFRESH_EXPIRES = env.jwt.refreshExpiresIn;
 
 if (!ACCESS_SECRET)  throw new Error('JWT_SECRET environment variable is required');
 if (!REFRESH_SECRET) throw new Error('JWT_REFRESH_SECRET environment variable is required');

@@ -3,7 +3,9 @@
  * Proxies image queries to the FastAPI ML service.
  */
 
-const ML_URL = process.env.ML_SERVICE_URL || 'http://localhost:8000';
+const env = require('../config/env');
+
+const ML_URL = env.mlServiceUrl;
 
 async function searchByImage(imageBuffer, topK = 6) {
   const formData = new FormData();

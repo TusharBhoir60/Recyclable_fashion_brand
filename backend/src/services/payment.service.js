@@ -1,10 +1,11 @@
 const Razorpay = require('razorpay');
 const crypto   = require('crypto');
 const prisma   = require('../utils/prisma');
+const env      = require('../config/env');
 
 const razorpay = new Razorpay({
-  key_id:     process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
+  key_id:     env.razorpay.keyId,
+  key_secret: env.razorpay.keySecret,
 });
 
 async function initiatePayment({ orderId, userId }) {
@@ -25,7 +26,7 @@ async function initiatePayment({ orderId, userId }) {
     razorpayOrderId: rzpOrder.id,
     amount:          rzpOrder.amount,
     currency:        rzpOrder.currency,
-    keyId:           process.env.RAZORPAY_KEY_ID,
+    keyId:           env.razorpay.keyId,
   };
 }
 
@@ -35,7 +36,7 @@ async function verifyPayment({ orderId, razorpayOrderId, razorpayPaymentId, razo
   if (order.userId !== userId) throw Object.assign(new Error('Forbidden'),       { status: 403 });
 
   const expected = crypto
-    .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+    .createHmac('sha256', env.razorpay.keySecret)
     .update(`${razorpayOrderId}|${razorpayPaymentId}`)
     .digest('hex');
 
