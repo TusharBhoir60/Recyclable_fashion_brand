@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const requiredVars = ['DATABASE_URL', 'JWT_SECRET', 'JWT_REFRESH_SECRET'];
 const productionOnlyVars = [
   'CLIENT_URL',
@@ -14,6 +16,13 @@ for (const key of requiredVars) {
   }
 }
 
+function withSslMode(url) {
+  if (!url) return url;
+  if (url.includes('sslmode=')) return url;
+  const joiner = url.includes('?') ? '&' : '?';
+  return `${url}${joiner}sslmode=require`;
+}
+
 if ((process.env.NODE_ENV || 'development') === 'production') {
   for (const key of productionOnlyVars) {
     if (!process.env[key]) {
@@ -21,6 +30,9 @@ if ((process.env.NODE_ENV || 'development') === 'production') {
     }
   }
 }
+
+// Supabase Postgres typically requires SSL; patch DATABASE_URL at runtime.
+process.env.DATABASE_URL = withSslMode(process.env.DATABASE_URL);
 
 const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
