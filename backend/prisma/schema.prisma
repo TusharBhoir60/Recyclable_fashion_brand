@@ -31,14 +31,14 @@ enum OrderStatus {
 }
 
 model User {
-  id        String           @id @default(uuid())
+  id       String @id @default(uuid())
   name      String
-  email     String           @unique
+  email     String   @unique
   password  String
-  role      UserRole         @default(USER)
+  role      UserRole @default(USER)
   segment   CustomerSegment?
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   orders  Order[]
   reviews Review[]
@@ -61,30 +61,30 @@ model Product {
 }
 
 model Customization {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   textContent String?
   imageUrl    String?
   font        String?
   color       String?
   position    String?
-  extraCharge Float    @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  extraCharge Float     @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   orderItems OrderItem[]
 }
 
 model Order {
-  id              String      @id @default(cuid())
-  userId          String
-  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  status          OrderStatus @default(PENDING)
-  totalAmount     Float
+  id             String      @id @default(cuid())
+  userId         String
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status         OrderStatus @default(PENDING)
+  totalAmount    Float
   shippingAddress Json
   razorpayOrderId String?
-  paymentId       String?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  paymentId      String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 
   items OrderItem[]
 
@@ -94,11 +94,11 @@ model Order {
 }
 
 model OrderItem {
-  id              String         @id @default(cuid())
+  id              String        @id @default(cuid())
   orderId         String
-  order           Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order           Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId       String
-  product         Product        @relation(fields: [productId], references: [id], onDelete: Restrict)
+  product         Product       @relation(fields: [productId], references: [id], onDelete: Restrict)
   customizationId String?
   customization   Customization? @relation(fields: [customizationId], references: [id], onDelete: SetNull)
   quantity        Int
@@ -110,21 +110,21 @@ model OrderItem {
 }
 
 model Review {
-  id        String   @id @default(cuid())
-  productId String
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  text      String
-  rating    Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                String   @id @default(cuid())
+  productId         String
+  product           Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  text              String
+  rating            Int
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   sentimentLabel    String?
   sentimentScore    Float?
   sentimentAspects  Json?
   sentimentSummary  String?
-  sentimentAnalyzed Boolean @default(false)
+  sentimentAnalyzed Boolean  @default(false)
 
   @@index([productId])
   @@index([userId])
@@ -132,16 +132,16 @@ model Review {
 }
 
 model MlReviewQueue {
-  id             String  @id @default(cuid())
-  imageUrl       String?
+  id         String   @id @default(cuid())
+  imageUrl   String?
   predictedLabel String?
-  confidence     Float?
+  confidence Float?
 
   trueLabel  String?
-  reviewed   Boolean   @default(false)
+  reviewed   Boolean  @default(false)
   reviewedAt DateTime?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@index([reviewed])
   @@index([createdAt])

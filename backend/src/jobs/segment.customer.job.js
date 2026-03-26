@@ -1,9 +1,10 @@
 const cron = require('node-cron');
+const env = require('../config/env');
 
-const ML_URL      = process.env.ML_SERVICE_URL || 'http://localhost:8000';
-const PORT        = process.env.PORT           || 5000;
+const ML_URL      = env.mlServiceUrl;
+const PORT        = env.port;
 const BACKEND_URL = `http://localhost:${PORT}`;
-const ADMIN_TOKEN = process.env.ADMIN_JWT_TOKEN;
+const ADMIN_TOKEN = env.adminJwtToken;
 
 /**
  * Weekly segmentation pipeline (Feature 4)

@@ -2,7 +2,9 @@
  * Recommender Service — Feature 6
  */
 
-const ML_URL = process.env.ML_SERVICE_URL || 'http://localhost:8000';
+const env = require('../config/env');
+
+const ML_URL = env.mlServiceUrl;
 
 async function getRecommendations(userId, topK = 6) {
   const res = await fetch(`${ML_URL}/recommend/${userId}?top_k=${topK}`);

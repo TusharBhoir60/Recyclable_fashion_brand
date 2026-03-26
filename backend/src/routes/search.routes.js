@@ -3,7 +3,7 @@ const upload       = require('../middleware/upload.middleware');
 const auth         = require('../middleware/auth.middleware');
 const prisma       = require('../utils/prisma');
 const visualSearch = require('../services/visualsearch.service');
-const recommender  = require('../services/recommender.services');
+const recommender  = require('../services/recommender.service');
 
 /**
  * POST /api/search/image

@@ -2,7 +2,9 @@
  * Forecast Service — Feature 5
  */
 
-const ML_URL = process.env.ML_SERVICE_URL || 'http://localhost:8000';
+const env = require('../config/env');
+
+const ML_URL = env.mlServiceUrl;
 
 async function getForecast(productType) {
   const res = await fetch(`${ML_URL}/forecast/${productType}`);

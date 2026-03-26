@@ -4,7 +4,8 @@
  */
 
 const prisma = require('../utils/prisma');
-const ML_URL = process.env.ML_SERVICE_URL || 'http://localhost:8000';
+const env = require('../config/env');
+const ML_URL = env.mlServiceUrl;
 
 async function analyseAndStore(reviewId, text) {
   try {
