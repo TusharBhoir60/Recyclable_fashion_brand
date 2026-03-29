@@ -1,177 +1,154 @@
-// @ts-nocheck
-import Head from 'next/head';
+import Head from "next/head";
+import Link from "next/link";
+import { useMemo, useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import { api } from "./apiClient";
+
+type CartItem = {
+  productId: string;
+  name: string;
+  price: number;
+  image?: string;
+  quantity: number;
+};
 
 export default function Checkout() {
+  const router = useRouter();
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [placing, setPlacing] = useState(false);
+
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [line1, setLine1] = useState("");
+  const [line2, setLine2] = useState("");
+  const [city, setCity] = useState("");
+  const [stateName, setStateName] = useState("");
+  const [pincode, setPincode] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("UPI");
+
+  useEffect(() => {
+    const raw = localStorage.getItem("cart");
+    setItems(raw ? JSON.parse(raw) : []);
+  }, []);
+
+  const subtotal = useMemo(() => items.reduce((sum, i) => sum + i.price * i.quantity, 0), [items]);
+  const platformFee = items.length ? 29 : 0;
+  const total = subtotal + platformFee;
+
+  async function placeOrder() {
+    try {
+      if (!items.length) return alert("Cart is empty");
+      if (!firstName || !phone || !line1 || !city || !stateName || !pincode) {
+        return alert("Please fill all required address fields");
+      }
+
+      setPlacing(true);
+
+      const payload = {
+        items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
+        shippingAddress: { firstName, lastName, phone, line1, line2, city, state: stateName, pincode },
+        paymentMethod,
+      };
+
+      await api.post("/orders", payload);
+
+      localStorage.removeItem("cart");
+      alert("Order placed successfully!");
+      router.push("/orders");
+    } catch (e: any) {
+      alert(e?.response?.data?.error || "Failed to place order");
+    } finally {
+      setPlacing(false);
+    }
+  }
+
   return (
     <>
-      <Head>
-        <title>Recycled Fashion</title>
-      </Head>
+      <Head><title>Checkout | GreenThreads</title></Head>
       <div>
-  {/* NAVBAR */}
-  <nav className="navbar">
-    <div className="container nav-inner">
-      <a href="/" className="nav-logo"><span className="leaf">🌿</span> GreenThreads</a>
-      <div className="nav-links">
-        <a href="/dashboard">Dashboard</a>
-        <a href="/shop">Shop</a>
-        <a href="/sell">Sell</a>
-        <a href="/orders">Orders</a>
-        <a href="/profile">Profile</a>
-        <a href="/cart" className="btn-nav nav-cart-icon">🛒 <span className="cart-badge">3</span></a>
-        <a href="/" className="btn btn-outline btn-sm" onClick={(e) => { window.logout() }} style={{marginLeft: 6}}>Logout</a>
-      </div>
-      <div className="hamburger"><span /><span /><span /></div>
-    </div>
-    <div className="mobile-menu">
-      <a href="/dashboard">📊 Dashboard</a>
-      <a href="/shop">🛍️ Shop</a>
-      <a href="/sell">💰 Sell</a>
-      <a href="/orders">📦 Orders</a>
-      <a href="/profile">👤 Profile</a>
-      <a href="/cart">🛒 Cart</a>
-      <a href="/" onClick={(e) => { window.logout() }}>🔐 Logout</a>
-    </div>
-  </nav>
-  {/* PAGE HEADER */}
-  <div className="page-header">
-    <div className="container">
-      <div className="breadcrumb"><a href="/cart">Cart</a><span className="breadcrumb-sep">›</span><span>Checkout</span></div>
-      <h1>Checkout</h1>
-      <p>Almost there! Complete your order below</p>
-    </div>
-  </div>
-  <section className="section-sm">
-    <div className="container">
-      {/* Step Indicator */}
-      <div className="step-indicator">
-        <div className="step done"><div className="step-dot">✓</div><div className="step-label">Cart</div></div>
-        <div className="step active"><div className="step-dot">2</div><div className="step-label">Delivery</div></div>
-        <div className="step"><div className="step-dot">3</div><div className="step-label">Payment</div></div>
-        <div className="step"><div className="step-dot">4</div><div className="step-label">Confirm</div></div>
-      </div>
-      <div className="checkout-layout">
-        {/* Left: Form */}
-        <div>
-          {/* Delivery Address */}
-          <div className="card" style={{marginBottom: 24}}>
-            <div className="card-header"><span className="card-title">📍 Delivery Address</span></div>
-            <form id="checkout-form">
-              <div className="form-row">
-                <div className="form-group">
-                  <label className="form-label" htmlFor="first-name">First Name</label>
-                  <input className="form-control" type="text" id="first-name" placeholder="Priya" required />
-                </div>
-                <div className="form-group">
-                  <label className="form-label" htmlFor="last-name">Last Name</label>
-                  <input className="form-control" type="text" id="last-name" placeholder="Sharma" required />
-                </div>
-              </div>
-              <div className="form-group">
-                <label className="form-label" htmlFor="co-phone">Phone Number</label>
-                <input className="form-control" type="tel" id="co-phone" placeholder={9876543210} required />
-              </div>
-              <div className="form-group">
-                <label className="form-label" htmlFor="addr-line1">Address Line 1</label>
-                <input className="form-control" type="text" id="addr-line1" placeholder="House No. / Flat / Building" required />
-              </div>
-              <div className="form-group">
-                <label className="form-label" htmlFor="addr-line2">Address Line 2 (Optional)</label>
-                <input className="form-control" type="text" id="addr-line2" placeholder="Street / Area / Landmark" />
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label className="form-label" htmlFor="city">City</label>
-                  <input className="form-control" type="text" id="city" placeholder="Mumbai" required />
-                </div>
-                <div className="form-group">
-                  <label className="form-label" htmlFor="state">State</label>
-                  <select className="form-control" id="state" required>
-                    <option value>Select State</option>
-                    <option>Maharashtra</option><option>Delhi</option><option>Karnataka</option>
-                    <option>Tamil Nadu</option><option>Gujarat</option><option>Rajasthan</option>
-                    <option>West Bengal</option><option>Telangana</option>
-                  </select>
-                </div>
-              </div>
-              <div className="form-group">
-                <label className="form-label" htmlFor="pincode">PIN Code</label>
-                <input className="form-control" type="text" id="pincode" placeholder={400001} maxLength={6} required />
-              </div>
-            </form>
-          </div>
-          {/* Payment */}
-          <div className="card">
-            <div className="card-header"><span className="card-title">💳 Payment Method</span></div>
-            <div className="payment-options">
-              <div className="payment-option selected"><span className="pay-icon">📱</span> UPI</div>
-              <div className="payment-option"><span className="pay-icon">💳</span> Card</div>
-              <div className="payment-option"><span className="pay-icon">🏦</span> Net Banking</div>
-              <div className="payment-option"><span className="pay-icon">💵</span> Cash on Delivery</div>
-            </div>
-            {/* UPI */}
-            <div style={{marginTop: 16, padding: 16, background: 'var(--green-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)'}}>
-              <label className="form-label">UPI ID</label>
-              <input className="form-control" type="text" placeholder="yourname@upi" />
+        <nav className="navbar">
+          <div className="container nav-inner">
+            <Link href="/" className="nav-logo"><span className="leaf">🌿</span> GreenThreads</Link>
+            <div className="nav-links">
+              <Link href="/shop">Shop</Link>
+              <Link href="/orders">Orders</Link>
+              <Link href="/profile">Profile</Link>
+              <Link href="/cart" className="btn-nav nav-cart-icon">🛒</Link>
             </div>
           </div>
-        </div>
-        {/* Right: Summary */}
-        <div>
-          <div className="card" style={{marginBottom: 20}}>
-            <div className="card-header"><span className="card-title">📦 Order Summary</span></div>
-            {/* Items preview */}
-            <div style={{display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16}}>
-              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '.9rem'}}>
-                <div style={{display: 'flex', alignItems: 'center', gap: 10}}>
-                  <img src="https://images.unsplash.com/photo-1543087903-1ac2ec7aa8c5?w=60&q=80" alt style={{width: 44, height: 44, borderRadius: 6, objectFit: 'cover'}} />
-                  <span>Classic Denim Jacket × 1</span>
-                </div>
-                <span style={{fontWeight: 700}}>₹549</span>
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '.9rem'}}>
-                <div style={{display: 'flex', alignItems: 'center', gap: 10}}>
-                  <img src="https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=60&q=80" alt style={{width: 44, height: 44, borderRadius: 6, objectFit: 'cover'}} />
-                  <span>Floral Sundress × 1</span>
-                </div>
-                <span style={{fontWeight: 700}}>₹349</span>
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '.9rem'}}>
-                <div style={{display: 'flex', alignItems: 'center', gap: 10}}>
-                  <img src="https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=60&q=80" alt style={{width: 44, height: 44, borderRadius: 6, objectFit: 'cover'}} />
-                  <span>Woollen Sweater × 1</span>
-                </div>
-                <span style={{fontWeight: 700}}>₹699</span>
-              </div>
-            </div>
-            <hr style={{border: 'none', borderTop: '1px solid var(--border)', marginBottom: 14}} />
-            <div className="summary-row"><span>Subtotal</span><span>₹ 1,597</span></div>
-            <div className="summary-row"><span>Delivery</span><span style={{color: 'var(--green-mid)', fontWeight: 700}}>FREE</span></div>
-            <div className="summary-row"><span>Discount</span><span style={{color: '#e53e3e'}}>−₹ 150</span></div>
-            <div className="summary-row"><span>Platform Fee</span><span>₹ 29</span></div>
-            <div className="summary-row total"><span>Total</span><span>₹ 1,476</span></div>
-          </div>
-          <button className="btn btn-primary btn-block btn-lg" id="place-order">🎉 Place Order</button>
-          <div style={{marginTop: 14, fontSize: '.8rem', color: 'var(--text-muted)', textAlign: 'center', lineHeight: '1.6'}}>
-            🔒 Secured by SSL · 🔄 Easy Returns · ♻️ Every order plants a tree
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-  <footer className="footer">
-    <div className="container">
-      <div className="footer-grid">
-        <div className="footer-brand"><a href="/" className="nav-logo"><span className="leaf">🌿</span> GreenThreads</a><p>India's leading recycled clothing marketplace.</p></div>
-        <div className="footer-col"><h4>Shop</h4><a href="/shop?cat=men">Men</a><a href="/shop?cat=women">Women</a><a href="/shop?cat=kids">Kids</a></div>
-        <div className="footer-col"><h4>Sellers</h4><a href="/sell">List Item</a><a href="/seller-dashboard">Dashboard</a></div>
-        <div className="footer-col"><h4>Company</h4><a href="#">About</a><a href="#">Blog</a><a href="#">Contact</a></div>
-      </div>
-      <div className="footer-bottom">© 2026 GreenThreads. Made with 💚 for a greener planet.</div>
-    </div>
-  </footer>
-</div>
+        </nav>
 
+        <div className="page-header">
+          <div className="container">
+            <div className="breadcrumb"><Link href="/cart">Cart</Link><span className="breadcrumb-sep">›</span><span>Checkout</span></div>
+            <h1>Checkout</h1>
+            <p>Almost there! Complete your order below</p>
+          </div>
+        </div>
+
+        <section className="section-sm">
+          <div className="container">
+            <div className="checkout-layout">
+              <div>
+                <div className="card" style={{ marginBottom: 24 }}>
+                  <div className="card-header"><span className="card-title">📍 Delivery Address</span></div>
+
+                  <div className="form-row">
+                    <div className="form-group"><label className="form-label">First Name</label><input className="form-control" value={firstName} onChange={(e) => setFirstName(e.target.value)} /></div>
+                    <div className="form-group"><label className="form-label">Last Name</label><input className="form-control" value={lastName} onChange={(e) => setLastName(e.target.value)} /></div>
+                  </div>
+                  <div className="form-group"><label className="form-label">Phone Number</label><input className="form-control" value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
+                  <div className="form-group"><label className="form-label">Address Line 1</label><input className="form-control" value={line1} onChange={(e) => setLine1(e.target.value)} /></div>
+                  <div className="form-group"><label className="form-label">Address Line 2</label><input className="form-control" value={line2} onChange={(e) => setLine2(e.target.value)} /></div>
+                  <div className="form-row">
+                    <div className="form-group"><label className="form-label">City</label><input className="form-control" value={city} onChange={(e) => setCity(e.target.value)} /></div>
+                    <div className="form-group"><label className="form-label">State</label><input className="form-control" value={stateName} onChange={(e) => setStateName(e.target.value)} /></div>
+                  </div>
+                  <div className="form-group"><label className="form-label">PIN Code</label><input className="form-control" value={pincode} onChange={(e) => setPincode(e.target.value)} maxLength={6} /></div>
+                </div>
+
+                <div className="card">
+                  <div className="card-header"><span className="card-title">💳 Payment Method</span></div>
+                  <div className="payment-options">
+                    {["UPI", "CARD", "NET_BANKING", "COD"].map((m) => (
+                      <button key={m} type="button" className={`payment-option ${paymentMethod === m ? "selected" : ""}`} onClick={() => setPaymentMethod(m)}>
+                        {m}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div className="card" style={{ marginBottom: 20 }}>
+                  <div className="card-header"><span className="card-title">📦 Order Summary</span></div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 16 }}>
+                    {items.map((item) => (
+                      <div key={item.productId} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: ".9rem" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <img src={item.image || "https://via.placeholder.com/60"} style={{ width: 44, height: 44, borderRadius: 6, objectFit: "cover" }} alt={item.name} />
+                          <span>{item.name} × {item.quantity}</span>
+                        </div>
+                        <span style={{ fontWeight: 700 }}>₹ {item.price * item.quantity}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="summary-row"><span>Subtotal</span><span>₹ {subtotal}</span></div>
+                  <div className="summary-row"><span>Delivery</span><span style={{ color: "var(--green-mid)", fontWeight: 700 }}>FREE</span></div>
+                  <div className="summary-row"><span>Platform Fee</span><span>₹ {platformFee}</span></div>
+                  <div className="summary-row total"><span>Total</span><span>₹ {total}</span></div>
+                </div>
+
+                <button className="btn btn-primary btn-block btn-lg" onClick={placeOrder} disabled={placing || !items.length}>
+                  {placing ? "Placing..." : "🎉 Place Order"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
     </>
   );
 }

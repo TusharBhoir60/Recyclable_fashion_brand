@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  turbopack: {
+    root: __dirname,
+  },
+
   async rewrites() {
     return [
       { source: "/index.html", destination: "/" },
@@ -19,9 +23,9 @@ const nextConfig = {
       { source: "/admin/manage-products.html", destination: "/admin/manage-products" },
       { source: "/admin/manage-orders.html", destination: "/admin/manage-orders" },
       { source: "/admin/earnings.html", destination: "/admin/earnings" },
-      { source: "/admin/reviews.html", destination: "/admin/reviews" }
+      { source: "/admin/reviews.html", destination: "/admin/reviews" },
     ];
-  }
+  },
 };
 
 module.exports = nextConfig;
