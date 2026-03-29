@@ -25,8 +25,6 @@ async function refreshToken(req, res, next) {
 }
 
 async function logout(req, res) {
-  // TODO (Sprint 1): When Redis is added, blocklist req.user's refresh token jti here
-  // using the jti claim stored in the refresh token so it cannot be reused before expiry.
   res.json({ message: 'Logged out successfully' });
 }
 
@@ -34,11 +32,38 @@ async function getMe(req, res, next) {
   try {
     const user = await prisma.user.findUnique({
       where:  { id: req.user.id },
-      select: { id: true, name: true, email: true, role: true, segment: true, createdAt: true },
+      select: { id: true, name: true, email: true, role: true, segment: true, phone: true, address: true, createdAt: true },
     });
     if (!user) return res.status(404).json({ error: 'User not found' });
     res.json(user);
   } catch (err) { next(err); }
 }
 
-module.exports = { register, login, refreshToken, logout, getMe };
+async function updateMe(req, res, next) {
+  try {
+    const { name, phone, address } = req.body || {};
+
+    const user = await prisma.user.update({
+      where: { id: req.user.id },
+      data: {
+        ...(name !== undefined ? { name } : {}),
+        ...(phone !== undefined ? { phone } : {}),
+        ...(address !== undefined ? { address } : {}),
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        segment: true,
+        phone: true,
+        address: true,
+        createdAt: true,
+      },
+    });
+
+    res.json({ user });
+  } catch (err) { next(err); }
+}
+
+module.exports = { register, login, refreshToken, logout, getMe, updateMe };
