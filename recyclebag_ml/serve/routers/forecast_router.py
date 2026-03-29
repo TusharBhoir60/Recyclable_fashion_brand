@@ -41,11 +41,31 @@ def _load_feature5():
         sys.path = original_sys_path
 
 
+@router.get("/health")
+def health():
+    try:
+        _load_feature5()
+        return {"status": "ok", "ready": True}
+    except Exception:
+        return {"status": "degraded", "ready": False, "reason": _load_error}
+
+
+@router.get("/")
+def get_all_forecasts(horizon: int = Query(default=30, ge=7, le=90)):
+    try:
+        _load_feature5()
+        result = forecast_all_fn(horizon)
+    except Exception:
+        raise HTTPException(status_code=503, detail=f"Forecast service unavailable: {_load_error}")
+
+    return JSONResponse(content={
+        "horizon_days": horizon,
+        "forecasts": result,
+    })
+
+
 @router.get("/{product_type}")
-def get_forecast(
-    product_type: str,
-    horizon: int = Query(default=30, ge=7, le=90),
-):
+def get_forecast(product_type: str, horizon: int = Query(default=30, ge=7, le=90)):
     valid = ["BASIC", "PREMIUM", "CUSTOMIZED"]
     if product_type.upper() not in valid:
         raise HTTPException(status_code=400, detail=f"Invalid product_type. Choose from: {valid}")
@@ -64,28 +84,3 @@ def get_forecast(
         "forecasts": result,
         "count": len(result),
     })
-
-
-@router.get("/")
-def get_all_forecasts(
-    horizon: int = Query(default=30, ge=7, le=90),
-):
-    try:
-        _load_feature5()
-        result = forecast_all_fn(horizon)
-    except Exception:
-        raise HTTPException(status_code=503, detail=f"Forecast service unavailable: {_load_error}")
-
-    return JSONResponse(content={
-        "horizon_days": horizon,
-        "forecasts": result,
-    })
-
-
-@router.get("/health")
-def health():
-    try:
-        _load_feature5()
-        return {"status": "ok", "ready": True}
-    except Exception:
-        return {"status": "degraded", "ready": False, "reason": _load_error}

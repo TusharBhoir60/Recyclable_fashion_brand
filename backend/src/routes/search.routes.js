@@ -27,7 +27,14 @@ router.post('/image', upload.single('image'), async (req, res, next) => {
       .filter(p => p.id);
 
     res.json(ordered);
-  } catch (err) { next(err); }
+  } catch (err) {
+    if (err.response) {
+      return res.status(err.response.status || 502).json({
+        error: `ML visual search error: ${err.response.data?.detail || err.response.data?.error || 'Unknown ML error'}`,
+      });
+    }
+    next(err);
+  }
 });
 
 /**
@@ -50,7 +57,14 @@ router.get('/similar/:productId', async (req, res, next) => {
       .filter(p => p.id);
 
     res.json(ordered);
-  } catch (err) { next(err); }
+  } catch (err) {
+    if (err.response) {
+      return res.status(err.response.status || 502).json({
+        error: `ML similar search error: ${err.response.data?.detail || err.response.data?.error || 'Unknown ML error'}`,
+      });
+    }
+    next(err);
+  }
 });
 
 /**
@@ -61,12 +75,20 @@ router.get('/recommendations', auth, async (req, res, next) => {
   try {
     const topK = Number(req.query.top_k) || 6;
 
-    // optional: derive bought_product_ids from DB
+    // Your enum supports only: PENDING, PAID, CANCELLED
+    // Use only valid purchased status values
+    const PURCHASED_STATUSES = ['PAID'];
+
     const pastOrders = await prisma.order.findMany({
-      where: { userId: req.user.id, status: { in: ['PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED'] } },
+      where: { userId: req.user.id, status: { in: PURCHASED_STATUSES } },
       select: { items: { select: { productId: true } } },
     });
+
     const boughtProductIds = [...new Set(pastOrders.flatMap(o => o.items.map(i => i.productId)))];
+
+    if (!boughtProductIds.length) {
+      return res.json([]);
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: req.user.id },
@@ -75,13 +97,15 @@ router.get('/recommendations', auth, async (req, res, next) => {
 
     const recommendations = await recommender.getRecommendations({
       userId: req.user.id,
-      segment: user?.segment || 'New',
+      segment: user?.segment || 'NEW', // enum-safe fallback
       boughtProductIds,
       topK,
     });
 
     // recommendations may be IDs OR objects depending on ML output
-    const productIds = recommendations.map(r => (typeof r === 'string' ? r : r.product_id)).filter(Boolean);
+    const productIds = recommendations
+      .map(r => (typeof r === 'string' ? r : r.product_id))
+      .filter(Boolean);
 
     const products = await prisma.product.findMany({
       where: { id: { in: productIds }, isActive: true },
@@ -91,7 +115,14 @@ router.get('/recommendations', auth, async (req, res, next) => {
     const ordered = productIds.map(id => map[id]).filter(Boolean);
 
     res.json(ordered);
-  } catch (err) { next(err); }
+  } catch (err) {
+    if (err.response) {
+      return res.status(err.response.status || 502).json({
+        error: `ML recommendation error: ${err.response.data?.detail || err.response.data?.error || 'Unknown ML error'}`,
+      });
+    }
+    next(err);
+  }
 });
 
 module.exports = router;
