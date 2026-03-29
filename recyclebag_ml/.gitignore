@@ -11,6 +11,7 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 .venv/
+.venv311/
 dist/
 
 # Notebooks — don't commit output cells
@@ -38,3 +39,4 @@ amazon-fine-food-reviews/
 
 
 .venv1/
+.venv311/Lib/  

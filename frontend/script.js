@@ -56,7 +56,7 @@ function handleUserLogin(event) {
   
   // Redirect to user dashboard
   setTimeout(() => {
-    window.location.href = 'dashboard.html';
+    window.location.href = '/dashboard';
   }, 1500);
 }
 
@@ -114,7 +114,7 @@ function handleAdminLogin(event) {
   
   // Redirect to admin dashboard
   setTimeout(() => {
-    window.location.href = 'admin/dashboard.html';
+    window.location.href = '/admin/dashboard';
   }, 1500);
 }
 
@@ -271,12 +271,21 @@ function highlightRoleOption(index) {
 
 // ── Smooth Scroll to Section ──
 function scrollToSection(sectionId) {
-  event.preventDefault();
+  if (event) event.preventDefault();
   const section = document.getElementById(sectionId);
   if (section) {
     section.scrollIntoView({ 
       behavior: 'smooth',
       block: 'start'
+    });
+    
+    // Update active nav link highlighting
+    const navLinks = document.querySelectorAll('.nav-links a, .mobile-menu a');
+    navLinks.forEach(link => {
+      link.classList.remove('active');
+      if (link.getAttribute('href') === '#' + sectionId) {
+        link.classList.add('active');
+      }
     });
   }
 }
@@ -303,16 +312,16 @@ function selectRoleAndRedirect(role) {
   
   if (role === 'admin') {
     // Redirect to admin login
-    window.location.href = 'admin/admin-login.html';
+    window.location.href = '/login';
   } else {
     // Redirect to appropriate login/signup based on pending action
     if (window.pendingAction === 'login') {
-      window.location.href = 'login.html';
+      window.location.href = '/login';
     } else if (window.pendingAction === 'signup') {
-      window.location.href = 'signup.html';
+      window.location.href = '/signup';
     } else {
       // Default to login
-      window.location.href = 'login.html';
+      window.location.href = '/login';
     }
   }
 }
@@ -326,7 +335,7 @@ function checkLoginAndRedirect(destination) {
     // User is not logged in, show login prompt
     showToast(`Please login to ${destination === 'shop' ? 'browse the shop' : 'start selling'}`);
     setTimeout(() => {
-      window.location.href = 'login.html';
+      window.location.href = '/login';
     }, 1500);
     return;
   }
@@ -471,9 +480,9 @@ function handleLogin(event) {
   // Redirect based on role
   setTimeout(() => {
     if (userData.role === 'admin') {
-      window.location.href = 'admin/dashboard.html';
+      window.location.href = '/admin/dashboard';
     } else {
-      window.location.href = 'dashboard.html';
+      window.location.href = '/dashboard';
     }
   }, 1500);
 }
@@ -541,7 +550,7 @@ function handleSignup(event) {
   
   // Redirect to login page
   setTimeout(() => {
-    window.location.href = 'login.html';
+    window.location.href = '/login';
   }, 1500);
 }
 
@@ -554,7 +563,7 @@ function checkLoginAndAddToCart() {
     // User is not logged in, show login prompt
     showToast('Please login to add items to cart');
     setTimeout(() => {
-      window.location.href = 'login.html';
+      window.location.href = '/login';
     }, 1500);
     return;
   }
@@ -604,11 +613,11 @@ function logout() {
   
   // Redirect to home page after a short delay
   setTimeout(() => {
-    window.location.href = 'index.html';
+    window.location.href = '/';
   }, 1000);
 }
 
-// ── Navbar Mobile Menu Toggle ──
+// ── Navbar Mobile Menu Toggle & Scroll Spy ──
 function initNavbar() {
   const hamburger = document.querySelector('.hamburger');
   const mobileMenu = document.querySelector('.mobile-menu');
@@ -618,13 +627,56 @@ function initNavbar() {
     });
   }
 
-  // Active link highlighting
   const navLinks = document.querySelectorAll('.nav-links a, .mobile-menu a');
-  navLinks.forEach(link => {
-    if (link.href === window.location.href) {
-      link.classList.add('active');
+  
+  function updateActiveLink() {
+    // If not on the homepage, just do simple exact matching
+    if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
+      const currentLoc = window.location.href.split('#')[0];
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.href.split('#')[0] === currentLoc) {
+          link.classList.add('active');
+        }
+      });
+      return;
     }
-  });
+
+    // ScrollSpy for the landing page
+    let currentSection = '';
+    const sections = ['shop-section', 'about-section'];
+    
+    sections.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        // If section is reasonably visible
+        if (rect.top <= window.innerHeight / 2 && rect.bottom >= 0) {
+          currentSection = id;
+        }
+      }
+    });
+
+    navLinks.forEach(link => {
+      link.classList.remove('active');
+      const href = link.getAttribute('href');
+      
+      if (currentSection) {
+        if (href === '#' + currentSection) {
+          link.classList.add('active');
+        }
+      } else {
+        // No hash section active, highlight Home
+        if (href === '/') {
+          link.classList.add('active');
+        }
+      }
+    });
+  }
+
+  // Initialize and bind
+  updateActiveLink();
+  window.addEventListener('scroll', updateActiveLink);
 }
 
 // ── Toast Notification ──
@@ -921,7 +973,7 @@ function initAuthForms() {
       e.preventDefault();
       if (validateForm('signup-form')) {
         showToast('Account created! Redirecting…');
-        setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+        setTimeout(() => { window.location.href = '/'; }, 1500);
       }
     });
   }
@@ -932,7 +984,7 @@ function initAuthForms() {
     adminLoginForm.addEventListener('submit', e => {
       e.preventDefault();
       showToast('Admin portal accessing…');
-      setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
+      setTimeout(() => { window.location.href = '/dashboard'; }, 1500);
     });
   }
 }
@@ -1002,3 +1054,4 @@ window.toggleLoginFields = toggleLoginFields;
 window.toggleLoginType = toggleLoginType;
 initPriceFilter();
 initThumbs();
+export {};
