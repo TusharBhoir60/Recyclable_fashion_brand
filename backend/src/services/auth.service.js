@@ -45,6 +45,12 @@ async function login({ email, password }) {
     throw Object.assign(new Error('Invalid credentials'), { status: 401 });
   }
 
+  // Update last login time
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { lastLoginAt: new Date() },
+  });
+
   const { password: _pw, ...safeUser } = user;
 
   const accessToken = signToken({ id: user.id, role: user.role });

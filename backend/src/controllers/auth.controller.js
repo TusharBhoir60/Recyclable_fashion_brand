@@ -4,6 +4,7 @@ const prisma      = require('../utils/prisma');
 async function register(req, res, next) {
   try {
     const result = await authService.register(req.body);
+    console.log(`[AUTH] User registered: ${result.user.email} (ID: ${result.user.id})`);
     res.status(201).json(result);
   } catch (err) { next(err); }
 }
@@ -11,6 +12,7 @@ async function register(req, res, next) {
 async function login(req, res, next) {
   try {
     const result = await authService.login(req.body);
+    console.log(`[AUTH] User logged in: ${result.user.email} (ID: ${result.user.id})`);
     res.json(result);
   } catch (err) { next(err); }
 }
@@ -25,6 +27,7 @@ async function refreshToken(req, res, next) {
 }
 
 async function logout(req, res) {
+  console.log(`[AUTH] User logged out: ${req.user.email} (ID: ${req.user.id})`);
   // TODO (Sprint 1): When Redis is added, blocklist req.user's refresh token jti here
   // using the jti claim stored in the refresh token so it cannot be reused before expiry.
   res.json({ message: 'Logged out successfully' });

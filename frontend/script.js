@@ -2,6 +2,49 @@
    RECYCLED FASHION APP — SHARED JAVASCRIPT
    ============================================ */
 
+const API_BASE_URL = 'http://localhost:5000/api';
+
+function getAuthHeaders() {
+  const token = localStorage.getItem('token');
+  console.log('[AUTH] Retrieved token from localStorage:', token ? 'present' : 'missing');
+  return token ? { 'Authorization': `Bearer ${token}` } : {};
+}
+
+async function apiRequest(path, options = {}) {
+  const url = `${API_BASE_URL}${path}`;
+  const finalOptions = {
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+      ...options.headers,
+    },
+    ...options,
+  };
+
+  const response = await fetch(url, finalOptions);
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    const message = errorBody.error || response.statusText || 'Network error';
+    throw new Error(message);
+  }
+
+  return response.json();
+}
+
+function setAuthState(user, accessToken, refreshToken) {
+  console.log('[AUTH] Setting auth state for user:', user.email);
+  localStorage.setItem('user', JSON.stringify(user));
+  localStorage.setItem('token', accessToken);
+  localStorage.setItem('refreshToken', refreshToken);
+}
+
+function clearAuthState() {
+  localStorage.removeItem('user');
+  localStorage.removeItem('token');
+  localStorage.removeItem('refreshToken');
+}
+
 // ── Handle User Login Form Submission ──
 function handleUserLogin(event) {
   event.preventDefault();
@@ -401,148 +444,90 @@ function toggleLoginFields() {
 }
 
 // ── Handle Login Form Submission ──
-function handleLogin(event) {
+async function handleLogin(event) {
   event.preventDefault();
-  
+
   const role = document.querySelector('input[name="role"]:checked').value;
-  console.log('Selected role:', role);
-  
-  let email, password;
-  
-  if (role === 'admin') {
-    // Admin login - get admin fields
-    email = document.getElementById('admin-email').value;
-    password = document.getElementById('admin-password').value;
-  } else {
-    // User login - get user fields
-    email = document.getElementById('user-email').value;
-    password = document.getElementById('user-password').value;
-  }
-  
-  // Basic validation
+  const email = role === 'admin' ? document.getElementById('admin-email').value : document.getElementById('user-email').value;
+  const password = role === 'admin' ? document.getElementById('admin-password').value : document.getElementById('user-password').value;
+
   if (!email || !password) {
     showToast('Please fill in all fields');
     return;
   }
-  
-  // Check for pending signup data
-  const pendingSignup = localStorage.getItem('pendingSignup');
-  if (pendingSignup) {
-    const signupData = JSON.parse(pendingSignup);
-    if (signupData.email === email && signupData.role === role) {
-      // Use signup data for login
-      var userData = {
-        name: signupData.name,
-        email: signupData.email,
-        role: signupData.role,
-        loginTime: new Date().toISOString()
-      };
-      // Clear pending signup
-      localStorage.removeItem('pendingSignup');
-    } else {
-      // Normal login data
-      var userData = {
-        email: email,
-        role: role,
-        name: role === 'admin' ? 'Admin' : email.split('@')[0],
-        loginTime: new Date().toISOString()
-      };
+
+  try {
+    const data = await apiRequest('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!data || !data.user || !data.accessToken || !data.refreshToken) {
+      throw new Error('Bad login response from server');
     }
-  } else {
-    // Normal login data
-    var userData = {
-      email: email,
-      role: role,
-      name: role === 'admin' ? 'Admin' : email.split('@')[0],
-      loginTime: new Date().toISOString()
-    };
+
+    setAuthState(data.user, data.accessToken, data.refreshToken);
+
+    showToast('Login successful! Redirecting...', 1600);
+
+    setTimeout(() => {
+      if (data.user.role && data.user.role.toUpperCase() === 'ADMIN') {
+        window.location.href = 'admin/dashboard.html';
+      } else {
+        window.location.href = 'dashboard.html';
+      }
+    }, 1600);
+  } catch (err) {
+    console.error('Login failed', err);
+    showToast(`Login failed: ${err.message}`);
   }
-  
-  // Store in localStorage
-  localStorage.setItem('user', JSON.stringify(userData));
-  
-  // Show success message
-  showToast(`Login successful! Welcome back${userData.role === 'admin' ? ' Admin' : ''}!`);
-  
-  // Debug: log the role and redirect URL
-  console.log('User role:', userData.role);
-  console.log('Redirecting to:', userData.role === 'admin' ? 'admin/dashboard.html' : 'dashboard.html');
-  
-  // Redirect based on role
-  setTimeout(() => {
-    if (userData.role === 'admin') {
-      window.location.href = 'admin/dashboard.html';
-    } else {
-      window.location.href = 'dashboard.html';
-    }
-  }, 1500);
 }
 
 // ── Handle Signup Form Submission ──
-function handleSignup(event) {
-  event.preventDefault();
-  
+async function handleSignup(event) {
+  console.log('[DEBUG] handleSignup fired');
+  showToast('Signup submitted, checking backend…', 1500);
+
   const role = document.querySelector('input[name="role"]:checked').value;
-  
-  let fullname, email, password;
-  
-  if (role === 'admin') {
-    // Admin signup - get admin fields
-    email = document.getElementById('admin-email').value;
-    password = document.getElementById('admin-password').value;
-    const confirmPassword = document.getElementById('admin-confirm-password').value;
-    fullname = 'Admin'; // Default name for admin
-    
-    // Basic validation for admin
-    if (!email || !password) {
-      showToast('Please fill in all fields');
-      return;
-    }
-    
-    if (password !== confirmPassword) {
-      showToast('Passwords do not match');
-      return;
-    }
-  } else {
-    // User signup - get user fields
-    fullname = document.getElementById('fullname').value;
-    email = document.getElementById('s-email').value;
-    password = document.getElementById('password').value;
-    const confirmPassword = document.getElementById('confirm-password').value;
-    
-    // Basic validation for user
-    if (!fullname || !email || !password) {
-      showToast('Please fill in all required fields');
-      return;
-    }
-    
-    if (password !== confirmPassword) {
-      showToast('Passwords do not match');
-      return;
-    }
+
+  const fullname = role === 'admin' ? 'Admin' : document.getElementById('fullname').value;
+  const email = role === 'admin' ? document.getElementById('admin-email').value : document.getElementById('s-email').value;
+  const password = role === 'admin' ? document.getElementById('admin-password').value : document.getElementById('password').value;
+  const confirmPassword = role === 'admin' ? document.getElementById('admin-confirm-password').value : document.getElementById('confirm-password').value;
+
+  if (!email || !password || !confirmPassword || (role === 'user' && !fullname)) {
+    showToast('Please fill in all required fields');
+    return;
   }
-  
-  // Store user data temporarily (will be cleared for login)
-  const userData = {
-    name: fullname,
-    email: email,
-    role: role,
-    signupTime: new Date().toISOString()
-  };
-  
-  // Store signup data in temporary storage
-  localStorage.setItem('pendingSignup', JSON.stringify(userData));
-  
-  // Clear any existing user session
-  localStorage.removeItem('user');
-  
-  // Show success message
-  showToast(`Account created successfully! Please login to continue.`);
-  
-  // Redirect to login page
-  setTimeout(() => {
-    window.location.href = 'login.html';
-  }, 1500);
+
+  if (password !== confirmPassword) {
+    showToast('Passwords do not match');
+    return;
+  }
+
+  try {
+    const payload = { name: fullname, email, password, role: role.toUpperCase() === 'ADMIN' ? 'ADMIN' : 'USER' };
+
+    const data = await apiRequest('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+
+    if (!data || !data.user || !data.accessToken || !data.refreshToken) {
+      throw new Error('Bad register response from server');
+    }
+
+    setAuthState(data.user, data.accessToken, data.refreshToken);
+
+    showToast('Account created! Redirecting...', 1600);
+
+    setTimeout(() => {
+      window.location.href = 'dashboard.html';
+    }, 1600);
+  } catch (err) {
+    console.error('Signup failed', err);
+    showToast(`Signup failed: ${err.message}`);
+  }
 }
 
 // ── Check Login and Add to Cart ──
@@ -594,18 +579,19 @@ function updateCartBadge() {
 }
 
 // ── Logout Function ──
-function logout() {
-  // Clear any stored user data
-  localStorage.removeItem('user');
-  localStorage.removeItem('token');
-  
-  // Show toast message
+async function logout() {
+  try {
+    await apiRequest('/auth/logout', {
+      method: 'POST',
+    });
+  } catch (err) {
+    // ignore remote logout errors, proceed with local clear anyway
+    console.warn('Logout API failed:', err.message);
+  }
+
+  clearAuthState();
   showToast('Logged out successfully');
-  
-  // Redirect to home page after a short delay
-  setTimeout(() => {
-    window.location.href = 'index.html';
-  }, 1000);
+  setTimeout(() => { window.location.href = 'index.html'; }, 1000);
 }
 
 // ── Navbar Mobile Menu Toggle ──
@@ -917,13 +903,7 @@ function initAuthForms() {
   // No need for additional event listener here
 
   if (signupForm) {
-    signupForm.addEventListener('submit', e => {
-      e.preventDefault();
-      if (validateForm('signup-form')) {
-        showToast('Account created! Redirecting…');
-        setTimeout(() => { window.location.href = 'index.html'; }, 1500);
-      }
-    });
+    // Signup is handled by onboarded handleSignup(event) form onsubmit binding in signup.html
   }
 
   // Admin login

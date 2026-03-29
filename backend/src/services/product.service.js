@@ -42,4 +42,4 @@ async function createProduct({ name, description, type, basePrice, stock, files 
   return product;
 }
 
-module.exports = { listProducts, getProduct, createProduct };
+module.exports = { getAllProducts:  getProduct, createProduct };
