@@ -28,7 +28,7 @@ const order = orderService.createOrder(
 console.log("Order:", order);
 
 // 4. Payment
-const payment = paymentService.processPayment(order.id, order.totalPrice);
+const payment = paymentService.initiatePayment(order.id, order.totalPrice);
 console.log("Payment:", payment);
 
 // 5. Recommendation

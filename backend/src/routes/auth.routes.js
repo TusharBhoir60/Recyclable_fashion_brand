@@ -24,4 +24,7 @@ router.post('/refresh',  authLimiter, validate(validateRefreshToken), ctrl.refre
 router.post('/logout',   authLimiter, auth, ctrl.logout);
 router.get('/me',        auth, ctrl.getMe);
 
+// Debug route for testing
+router.get('/register', (req, res) => res.json({ message: 'Register endpoint is POST only. Use the signup form.' }));
+
 module.exports = router;

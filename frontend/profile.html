@@ -173,6 +173,24 @@
 </footer>
 <script src="script.js"></script>
 <script>
+async function loadProfile() {
+  try {
+    const user = await apiRequest('/auth/me');
+    document.getElementById('prof-name').value = user.name;
+    document.getElementById('prof-email').value = user.email;
+    document.querySelector('.profile-name').textContent = user.name;
+    document.querySelector('.profile-email').textContent = user.email;
+    document.querySelector('.profile-avatar').textContent = user.name.charAt(0).toUpperCase();
+  } catch (err) {
+    console.error('Failed to load profile:', err);
+    showToast('Failed to load profile data');
+    // Redirect to login if not authenticated
+    setTimeout(() => window.location.href = 'login.html', 2000);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', loadProfile);
+
 function toggleEdit() {
   const fields = ['prof-name','prof-phone','prof-email','prof-addr'];
   const disabled = document.getElementById('prof-name').disabled;
