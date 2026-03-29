@@ -4,8 +4,11 @@ const cors = require('cors');
 const apiRoutes = require('./routes');
 const env = require('./config/env');
 const app = express();
-
+import mlRoutes from './routes/ml.Routes.js';
+app.use('/api/ml', mlRoutes);
 // Core middleware
+const mlRoutes = require("./routes/ml.Routes");
+app.use("/api/ml", mlRoutes);
 app.use(cors({ origin: env.clientUrl }));
 app.use(express.json());
 
