@@ -1,24 +1,24 @@
 from fastapi import FastAPI
 
-from serve.routers.visual_search_router import router as visual_search_router
 from serve.routers.sentiment_router import router as sentiment_router
-from serve.routers.textile_router import router as textile_router
-from serve.routers.segmentation_router import router as segmentation_router
 from serve.routers.forecast_router import router as forecast_router
-from serve.routers.recommender_router import router as recommender_router
-
+from serve.routers.visual_search_router import router as visual_search_router
+from serve.routers.textile_router import router as textile_router
+# Temporarily disable problematic import-collision routers:
+# from serve.routers.segmentation_router import router as segmentation_router
+# from serve.routers.recommender_router import router as recommender_router
 
 app = FastAPI(title="RecycleBag ML Service", version="1.0.0")
 
-
 @app.get("/")
 def root():
-	return {"status": "ok", "service": "recyclebag-ml"}
+    return {"status": "ok", "service": "recyclebag-ml"}
 
-
-app.include_router(visual_search_router, prefix="/search", tags=["visual-search"])
 app.include_router(sentiment_router, prefix="/sentiment", tags=["sentiment"])
-app.include_router(textile_router, prefix="/textile", tags=["textile"])
-app.include_router(segmentation_router, prefix="/segment", tags=["segmentation"])
 app.include_router(forecast_router, prefix="/forecast", tags=["forecasting"])
-app.include_router(recommender_router, prefix="/recommend", tags=["recommender"])
+app.include_router(visual_search_router, prefix="/search", tags=["visual-search"])
+app.include_router(textile_router, prefix="/textile", tags=["textile"])
+
+# Add back after import fixes:
+# app.include_router(segmentation_router, prefix="/segment", tags=["segmentation"])
+# app.include_router(recommender_router, prefix="/recommend", tags=["recommender"])

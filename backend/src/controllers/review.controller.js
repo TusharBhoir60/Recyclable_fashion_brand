@@ -17,7 +17,7 @@ async function createReview(req, res, next) {
     });
 
     // Fire-and-forget — never blocks the response
-    sentiment.analyseAndStore(review.id, text);
+    sentiment.analyseAndStore(review.id, text, productId);
 
     res.status(201).json(review);
   } catch (err) { next(err); }
