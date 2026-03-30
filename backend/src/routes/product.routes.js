@@ -7,9 +7,9 @@ const validate = require('../middleware/validate.middleware');
 const { validateCreateProduct } = require('../validators/product.validator');
 
 router.get('/', ctrl.listProducts);
-router.get('/slug/:slug', ctrl.getProductBySlug);
 router.get('/id/:id', ctrl.getProductById);
-router.get('/:id', ctrl.getProduct); // legacy support
+router.get('/slug/:slug', ctrl.getProductBySlug); // compatibility route (returns 400 message)
+router.get('/:id', ctrl.getProduct);              // legacy id support
 
 router.post(
   '/',

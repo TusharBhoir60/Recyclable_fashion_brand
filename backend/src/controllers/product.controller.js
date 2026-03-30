@@ -1,40 +1,34 @@
-const mongoose = require('mongoose');
-const Product = require('../models/product.model');
+const productService = require('../services/product.service');
 
 const toDto = (p) => ({
-  id: String(p._id),
+  id: p.id,
   name: p.name,
-  slug: p.slug,
   description: p.description,
-  price: p.price,
+  type: p.type,
+  price: p.basePrice,          // FE-friendly alias
+  basePrice: p.basePrice,
+  stock: p.stock,
   images: p.images || [],
   image: p.images?.[0] || '',
-  category: p.category || '',
-  artisan_name: p.artisan_name || '',
+  isActive: p.isActive,
   createdAt: p.createdAt,
   updatedAt: p.updatedAt,
 });
 
 const listProducts = async (req, res, next) => {
   try {
-    const items = await Product.find({ is_deleted: false }).sort({ createdAt: -1 }).lean();
+    const { type, page = 1, limit = 12 } = req.query;
+    const result = await productService.listProducts({ type, page: Number(page), limit: Number(limit) });
+
     return res.status(200).json({
       success: true,
-      data: { products: items.map(toDto) },
+      data: {
+        products: result.products.map(toDto),
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+      },
     });
-  } catch (e) {
-    next(e);
-  }
-};
-
-const getProductBySlug = async (req, res, next) => {
-  try {
-    const { slug } = req.params;
-    const item = await Product.findOne({ slug: String(slug).toLowerCase(), is_deleted: false }).lean();
-
-    if (!item) return res.status(404).json({ success: false, message: 'Product not found' });
-
-    return res.status(200).json({ success: true, data: { product: toDto(item) } });
   } catch (e) {
     next(e);
   }
@@ -42,53 +36,42 @@ const getProductBySlug = async (req, res, next) => {
 
 const getProductById = async (req, res, next) => {
   try {
-    const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, message: 'Invalid product id' });
-    }
-
-    const item = await Product.findOne({ _id: id, is_deleted: false }).lean();
-    if (!item) return res.status(404).json({ success: false, message: 'Product not found' });
-
-    return res.status(200).json({ success: true, data: { product: toDto(item) } });
+    const product = await productService.getProduct(req.params.id);
+    return res.status(200).json({ success: true, data: { product: toDto(product) } });
   } catch (e) {
     next(e);
   }
 };
 
-// Backward compatible single route: /:value
+// Prisma model has no slug now — keep route for compatibility but return clear message
+const getProductBySlug = async (req, res) => {
+  return res.status(400).json({
+    success: false,
+    message: 'Slug lookup not supported. Use /products/id/:id',
+  });
+};
+
+// Legacy route: treat /:id as id
 const getProduct = async (req, res, next) => {
-  try {
-    const { id } = req.params; // existing param name
-
-    if (mongoose.Types.ObjectId.isValid(id)) return getProductById(req, res, next);
-
-    req.params.slug = id;
-    return getProductBySlug(req, res, next);
-  } catch (e) {
-    next(e);
-  }
+  return getProductById(req, res, next);
 };
 
 const createProduct = async (req, res, next) => {
   try {
-    const payload = req.body;
-    const created = await Product.create({
-      name: payload.name,
-      slug: payload.slug,
-      description: payload.description || '',
-      price: Number(payload.price || 0),
-      images: payload.images || [],
-      category: payload.category || '',
-      artisan_name: payload.artisan_name || '',
+    const { name, description, type, basePrice, stock } = req.body;
+    const files = req.files || [];
+
+    const product = await productService.createProduct({
+      name,
+      description,
+      type,
+      basePrice,
+      stock,
+      files,
     });
 
-    return res.status(201).json({ success: true, data: { product: toDto(created) } });
+    return res.status(201).json({ success: true, data: { product: toDto(product) } });
   } catch (e) {
-    if (e?.code === 11000) {
-      return res.status(409).json({ success: false, message: 'Slug already exists' });
-    }
     next(e);
   }
 };
