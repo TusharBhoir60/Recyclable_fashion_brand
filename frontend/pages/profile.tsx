@@ -3,7 +3,6 @@ import Head from "next/head";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api } from "./apiClient";
-const res = await api.get("/auth/me");
 
 export default function Profile() {
   const [loading, setLoading] = useState(true);
@@ -21,6 +20,9 @@ export default function Profile() {
   async function loadProfile() {
     try {
       setLoading(true);
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
       const res = await api.get("/auth/me");
       const u = res.data?.user || res.data?.data || res.data || {};
 
@@ -41,35 +43,51 @@ export default function Profile() {
   async function saveProfile() {
     try {
       setSaving(true);
+
+      const payload = {
+        name: String(profile.name || "").trim(),
+        phone: String(profile.phone || "").trim(),
+        address: String(profile.address || "").trim(),
+      };
+
+      // Try primary route first
       try {
-        await api.put("/auth/me", {
-          name: profile.name,
-          phone: profile.phone,
-          address: profile.address,
-        });
-      } catch {
-        await api.put("/users/me", {
-          name: profile.name,
-          phone: profile.phone,
-          address: profile.address,
-        });
+        await api.put("/auth/me", payload);
+      } catch (e: any) {
+        // fallback route if your backend uses users module
+        if (e?.response?.status === 404 || e?.response?.status === 405) {
+          await api.put("/users/me", payload);
+        } else {
+          throw e;
+        }
       }
 
       setEditMode(false);
-      alert("Profile updated");
-      loadProfile();
+      await loadProfile();
+      alert("Profile updated successfully");
     } catch (e: any) {
-      alert(e?.response?.data?.error || "Failed to save profile");
+      alert(
+  JSON.stringify({
+    status: e?.response?.status,
+    data: e?.response?.data,
+    url: e?.config?.url,
+    method: e?.config?.method,
+  })
+);
     } finally {
       setSaving(false);
     }
   }
 
-useEffect(() => {
-  const token = localStorage.getItem("token");
-  if (!token) return;
-  loadProfile();
-}, []);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+    loadProfile();
+  }, []);
 
   const initial = (profile.name || "U").charAt(0).toUpperCase();
   const memberSince = profile.createdAt
@@ -99,6 +117,7 @@ useEffect(() => {
                 style={{ marginLeft: 6 }}
                 onClick={() => {
                   localStorage.removeItem("token");
+                  localStorage.removeItem("user");
                   window.location.href = "/login";
                 }}
               >
@@ -131,44 +150,18 @@ useEffect(() => {
                       ⭐ Eco Shopper · Member since {memberSince}
                     </div>
                   </div>
-
-                  <nav className="profile-nav">
-                    <div className="profile-nav-link active"><span className="link-icon">👤</span> Account Details</div>
-                    <Link href="/orders" className="profile-nav-link"><span className="link-icon">📦</span> My Orders</Link>
-                    <Link href="/sell" className="profile-nav-link"><span className="link-icon">🏷️</span> My Listings</Link>
-                    <div className="profile-nav-link"><span className="link-icon">❤️</span> Wishlist</div>
-                    <div className="profile-nav-link"><span className="link-icon">📍</span> Saved Addresses</div>
-                    <div className="profile-nav-link"><span className="link-icon">🔔</span> Notifications</div>
-                    <div className="profile-nav-link"><span className="link-icon">🔒</span> Privacy &amp; Security</div>
-                  </nav>
                 </div>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-                  <div style={{ background: "linear-gradient(135deg,var(--green-dark),var(--green-mid))", borderRadius: "var(--radius-md)", padding: 28, color: "#fff", display: "flex", gap: 32, flexWrap: "wrap" }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: ".85rem", opacity: ".75", marginBottom: 4 }}>Your Eco Impact</div>
-                      <div style={{ fontSize: "1.8rem", fontWeight: 800, marginBottom: 2 }}>12.4 kg CO₂</div>
-                      <div style={{ fontSize: ".85rem", opacity: ".8" }}>Saved by buying recycled</div>
-                    </div>
-                    <div style={{ flex: 1, borderLeft: "1px solid rgba(255,255,255,.2)", paddingLeft: 32 }}>
-                      <div style={{ fontSize: ".85rem", opacity: ".75", marginBottom: 4 }}>Garments Saved</div>
-                      <div style={{ fontSize: "1.8rem", fontWeight: 800, marginBottom: 2 }}>7</div>
-                      <div style={{ fontSize: ".85rem", opacity: ".8" }}>Items given a second life</div>
-                    </div>
-                    <div style={{ flex: 1, borderLeft: "1px solid rgba(255,255,255,.2)", paddingLeft: 32 }}>
-                      <div style={{ fontSize: ".85rem", opacity: ".75", marginBottom: 4 }}>Money Saved</div>
-                      <div style={{ fontSize: "1.8rem", fontWeight: 800, marginBottom: 2 }}>₹ 4,200</div>
-                      <div style={{ fontSize: ".85rem", opacity: ".8" }}>Vs. buying new</div>
-                    </div>
-                  </div>
-
                   <div className="card">
                     <div className="card-header">
                       <span className="card-title">Account Details</span>
                       {!editMode ? (
                         <button className="btn btn-outline btn-sm" onClick={() => setEditMode(true)}>✏️ Edit</button>
                       ) : (
-                        <button className="btn btn-outline btn-sm" onClick={() => { setEditMode(false); loadProfile(); }}>Cancel</button>
+                        <button className="btn btn-outline btn-sm" onClick={() => { setEditMode(false); loadProfile(); }}>
+                          Cancel
+                        </button>
                       )}
                     </div>
 
@@ -180,7 +173,7 @@ useEffect(() => {
                             className="form-control"
                             type="text"
                             value={profile.name}
-                            disabled={!editMode}
+                            disabled={!editMode || saving}
                             onChange={(e) => setProfile({ ...profile, name: e.target.value })}
                           />
                         </div>
@@ -190,7 +183,7 @@ useEffect(() => {
                             className="form-control"
                             type="text"
                             value={profile.phone}
-                            disabled={!editMode}
+                            disabled={!editMode || saving}
                             onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
                           />
                         </div>
@@ -207,7 +200,7 @@ useEffect(() => {
                           className="form-control"
                           rows={2}
                           value={profile.address}
-                          disabled={!editMode}
+                          disabled={!editMode || saving}
                           onChange={(e) => setProfile({ ...profile, address: e.target.value })}
                         />
                       </div>
@@ -222,22 +215,13 @@ useEffect(() => {
                             className="btn btn-outline"
                             style={{ marginLeft: 10 }}
                             onClick={() => { setEditMode(false); loadProfile(); }}
+                            disabled={saving}
                           >
                             Cancel
                           </button>
                         </div>
                       )}
                     </form>
-                  </div>
-
-                  <div className="card">
-                    <div className="card-header">
-                      <span className="card-title">Recent Orders</span>
-                      <Link href="/orders" style={{ fontSize: ".88rem", color: "var(--green-mid)", fontWeight: 600 }}>
-                        View All →
-                      </Link>
-                    </div>
-                    <p style={{ color: "var(--text-muted)" }}>See full order timeline in Orders page.</p>
                   </div>
                 </div>
               </div>
@@ -248,17 +232,3 @@ useEffect(() => {
     </>
   );
 }
-<button
-  onClick={async () => {
-    try {
-      const r = await api.get("/auth/me");
-      console.log("ME OK", r.data);
-      alert("me ok");
-    } catch (e: any) {
-      console.log("ME ERR", e?.response?.status, e?.response?.data);
-      alert(JSON.stringify(e?.response?.data || {}));
-    }
-  }}
->
-  Test /auth/me
-</button>

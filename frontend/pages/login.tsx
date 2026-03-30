@@ -42,6 +42,7 @@ export default function Login() {
       if (!token) throw new Error("Token not found in login response");
 
       localStorage.setItem("token", token);
+      console.log("Saved token length:", token.length);
 
       const user = res?.data?.user || res?.data?.data?.user;
       if (user) localStorage.setItem("user", JSON.stringify(user));
