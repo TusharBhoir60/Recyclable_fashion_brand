@@ -1,24 +1,50 @@
 from fastapi import FastAPI
 
-from serve.routers.sentiment_router import router as sentiment_router
-from serve.routers.forecast_router import router as forecast_router
-from serve.routers.visual_search_router import router as visual_search_router
-from serve.routers.textile_router import router as textile_router
-# Temporarily disable problematic import-collision routers:
-# from serve.routers.segmentation_router import router as segmentation_router
-# from serve.routers.recommender_router import router as recommender_router
+
+def _try_include(app: FastAPI, import_path: str, prefix: str, tags: list[str]):
+    """Load routers defensively so one missing dependency doesn't kill the API."""
+    try:
+        module_path, router_name = import_path.split(":", 1)
+        module = __import__(module_path, fromlist=[router_name])
+        router = getattr(module, router_name)
+        app.include_router(router, prefix=prefix, tags=tags)
+        return {"loaded": True, "error": None}
+    except Exception as exc:
+        return {"loaded": False, "error": str(exc)}
 
 app = FastAPI(title="RecycleBag ML Service", version="1.0.0")
 
+router_status = {
+    "sentiment": _try_include(
+        app,
+        "serve.routers.sentiment_router:router",
+        "/sentiment",
+        ["sentiment"],
+    ),
+    "forecast": _try_include(
+        app,
+        "serve.routers.forecast_router:router",
+        "/forecast",
+        ["forecasting"],
+    ),
+    "search": _try_include(
+        app,
+        "serve.routers.visual_search_router:router",
+        "/search",
+        ["visual-search"],
+    ),
+    "textile": _try_include(
+        app,
+        "serve.routers.textile_router:router",
+        "/textile",
+        ["textile"],
+    ),
+}
+
 @app.get("/")
 def root():
-    return {"status": "ok", "service": "recyclebag-ml"}
-
-app.include_router(sentiment_router, prefix="/sentiment", tags=["sentiment"])
-app.include_router(forecast_router, prefix="/forecast", tags=["forecasting"])
-app.include_router(visual_search_router, prefix="/search", tags=["visual-search"])
-app.include_router(textile_router, prefix="/textile", tags=["textile"])
-
-# Add back after import fixes:
-# app.include_router(segmentation_router, prefix="/segment", tags=["segmentation"])
-# app.include_router(recommender_router, prefix="/recommend", tags=["recommender"])
+    return {
+        "status": "ok",
+        "service": "recyclebag-ml",
+        "routers": router_status,
+    }
