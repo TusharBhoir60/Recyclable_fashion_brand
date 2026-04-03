@@ -1,6 +1,6 @@
-# KalaKart – Recyclable Fashion Marketplace ♻️👗
+ Recyclable Fashion Marketplace ♻️👗
 
-KalaKart is a sustainable fashion marketplace built for a hackathon sprint, focused on delivering a stable, demo-ready user journey:
+KalaKart is a sustainable fashion marketplace built for a focused on delivering a stable, demo-ready user journey:
 
 - User authentication & profile management
 - Product discovery
@@ -11,10 +11,9 @@ KalaKart is a sustainable fashion marketplace built for a hackathon sprint, focu
 
 ## 🚀 Live Demo
 
-- **Frontend URL:** `ADD_FRONTEND_URL_HERE`
-- **Backend URL:** `ADD_BACKEND_URL_HERE`
+- **Frontend URL:** ` http://localhost:3000`
+- **Backend URL:** `http://localhost:8000)`
 
----
 
 ## ✨ Core Features
 
@@ -168,7 +167,7 @@ Base path: `/api`
 
 ## 🌱 Sustainability Note
 
-KalaKart is designed to support sustainability indicators (e.g., estimated water savings for recycled materials).  
+ it is designed to support sustainability indicators (e.g., estimated water savings for recycled materials).  
 In this sprint version, core commerce and reliability flows were prioritized for demo stability.
 
 ---
