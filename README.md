@@ -1,6 +1,6 @@
  Recyclable Fashion Marketplace ♻️👗
 
-KalaKart is a sustainable fashion marketplace built for a focused on delivering a stable, demo-ready user journey:
+it is a sustainable fashion marketplace built for a focused on delivering a stable, demo-ready user journey:
 
 - User authentication & profile management
 - Product discovery
