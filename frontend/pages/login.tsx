@@ -42,17 +42,17 @@ export default function Login() {
       <div className="auth-form-wrap">
         <h2>Welcome back 👋</h2>
         <p className="auth-sub">Log in to your GreenThreads account</p>
-        <form id="login-form" onSubmit={(e) => { window.handleLogin(event) }}>
+        <form id="login-form" onSubmit={(e) => { window.handleLogin(e); }}>
           <div className="form-group">
             <label className="form-label">Select Your Role</label>
             <div className="role-selector">
               <label className="role-option">
-                <input type="radio" name="role" defaultValue="user" defaultChecked onchange="toggleLoginFields()" />
+                <input type="radio" name="role" defaultValue="user" defaultChecked onChange={() => window.toggleLoginFields()} />
                 <span className="role-icon">👤</span>
                 <span className="role-text">User</span>
               </label>
               <label className="role-option">
-                <input type="radio" name="role" defaultValue="admin" onchange="toggleLoginFields()" />
+                <input type="radio" name="role" defaultValue="admin" onChange={() => window.toggleLoginFields()} />
                 <span className="role-icon">🛡️</span>
                 <span className="role-text">Admin</span>
               </label>
@@ -68,7 +68,7 @@ export default function Login() {
               <label className="form-label" htmlFor="user-password">Password</label>
               <div style={{position: 'relative'}}>
                 <input className="form-control" type="password" id="user-password" name="user-password" placeholder="••••••••" required style={{paddingRight: 44}} />
-                <button type="button" id="toggle-user-pw" onClick={(e) => { this.previousElementSibling.type=this.previousElementSibling.type==='password'?'text':'password';this.textContent=this.previousElementSibling.type==='password'?'👁':'🙈'; }} style={{position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem'}}>👁</button>
+                <button type="button" id="toggle-user-pw" onClick={(e) => { const btn = e.currentTarget; const input = btn.previousElementSibling as HTMLInputElement | null; if (!input) return; input.type = input.type === 'password' ? 'text' : 'password'; btn.textContent = input.type === 'password' ? '👁' : '🙈'; }} style={{position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem'}}>👁</button>
               </div>
               <a href="#" className="forgot-link">Forgot Password?</a>
             </div>
@@ -83,7 +83,7 @@ export default function Login() {
               <label className="form-label" htmlFor="admin-password">Password</label>
               <div style={{position: 'relative'}}>
                 <input className="form-control" type="password" id="admin-password" name="admin-password" placeholder="••••••••" required style={{paddingRight: 44}} />
-                <button type="button" id="toggle-admin-pw" onClick={(e) => { this.previousElementSibling.type=this.previousElementSibling.type==='password'?'text':'password';this.textContent=this.previousElementSibling.type==='password'?'👁':'🙈'; }} style={{position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem'}}>👁</button>
+                <button type="button" id="toggle-admin-pw" onClick={(e) => { const btn = e.currentTarget; const input = btn.previousElementSibling as HTMLInputElement | null; if (!input) return; input.type = input.type === 'password' ? 'text' : 'password'; btn.textContent = input.type === 'password' ? '👁' : '🙈'; }} style={{position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem'}}>👁</button>
               </div>
               <a href="#" className="forgot-link">Forgot Password?</a>
             </div>
