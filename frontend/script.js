@@ -2,6 +2,15 @@
    RECYCLED FASHION APP — SHARED JAVASCRIPT
    ============================================ */
 
+function safeParseJSON(value, fallback = null) {
+  if (!value || typeof value !== 'string') return fallback;
+  try {
+    return JSON.parse(value);
+  } catch (_err) {
+    return fallback;
+  }
+}
+
 // ── Handle User Login Form Submission ──
 function handleUserLogin(event) {
   event.preventDefault();
@@ -18,8 +27,8 @@ function handleUserLogin(event) {
   // Check for pending signup data
   const pendingSignup = localStorage.getItem('pendingSignup');
   if (pendingSignup) {
-    const signupData = JSON.parse(pendingSignup);
-    if (signupData.email === email && signupData.role === 'user') {
+    const signupData = safeParseJSON(pendingSignup);
+    if (signupData && signupData.email === email && signupData.role === 'user') {
       // Use signup data for login
       var userData = {
         name: signupData.name,
@@ -76,8 +85,8 @@ function handleAdminLogin(event) {
   // Check for pending signup data
   const pendingSignup = localStorage.getItem('pendingSignup');
   if (pendingSignup) {
-    const signupData = JSON.parse(pendingSignup);
-    if (signupData.email === email && signupData.role === 'admin') {
+    const signupData = safeParseJSON(pendingSignup);
+    if (signupData && signupData.email === email && signupData.role === 'admin') {
       // Use signup data for login
       var userData = {
         name: signupData.name,
@@ -179,7 +188,11 @@ function toggleSignupFields() {
 function prefillLoginForm() {
   const pendingSignup = localStorage.getItem('pendingSignup');
   if (pendingSignup) {
-    const signupData = JSON.parse(pendingSignup);
+    const signupData = safeParseJSON(pendingSignup);
+    if (!signupData) {
+      localStorage.removeItem('pendingSignup');
+      return;
+    }
     
     // Set role based on signup
     const roleRadio = document.querySelector(`input[name="role"][value="${signupData.role}"]`);
@@ -437,8 +450,8 @@ function handleLogin(event) {
   // Check for pending signup data
   const pendingSignup = localStorage.getItem('pendingSignup');
   if (pendingSignup) {
-    const signupData = JSON.parse(pendingSignup);
-    if (signupData.email === email && signupData.role === role) {
+    const signupData = safeParseJSON(pendingSignup);
+    if (signupData && signupData.email === email && signupData.role === role) {
       // Use signup data for login
       var userData = {
         name: signupData.name,
@@ -573,7 +586,7 @@ function checkLoginAndAddToCart() {
   const productPrice = event.target.closest('.product-card').querySelector('.product-card__price').textContent;
   
   // Get current cart or initialize empty array
-  let cart = JSON.parse(localStorage.getItem('cart')) || [];
+  let cart = safeParseJSON(localStorage.getItem('cart'), []);
   
   // Add item to cart
   const newItem = {
@@ -597,7 +610,7 @@ function checkLoginAndAddToCart() {
 function updateCartBadge() {
   const cartBadge = document.querySelector('.cart-badge');
   if (cartBadge) {
-    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const cart = safeParseJSON(localStorage.getItem('cart'), []);
     cartBadge.textContent = cart.length;
   }
 }
@@ -615,6 +628,65 @@ function logout() {
   setTimeout(() => {
     window.location.href = '/';
   }, 1000);
+}
+
+// ── Profile Edit/Save (Profile Page) ──
+function toggleEdit() {
+  const form = document.getElementById('profile-form');
+  const saveWrap = document.getElementById('save-btn-wrap');
+  const editBtn = document.getElementById('edit-btn');
+  if (!form || !saveWrap || !editBtn) return;
+
+  const fields = form.querySelectorAll('input, textarea');
+  const isReadOnly = Array.from(fields).every((field) => field.disabled);
+
+  fields.forEach((field) => {
+    field.disabled = !isReadOnly;
+    field.classList.toggle('readonly-active', !field.disabled);
+  });
+
+  saveWrap.style.display = isReadOnly ? 'block' : 'none';
+  editBtn.textContent = isReadOnly ? 'Editing...' : '✏️ Edit';
+}
+
+function saveProfile() {
+  const nameEl = document.getElementById('prof-name');
+  const phoneEl = document.getElementById('prof-phone');
+  const emailEl = document.getElementById('prof-email');
+  const addrEl = document.getElementById('prof-addr');
+
+  if (!nameEl || !phoneEl || !emailEl || !addrEl) return;
+
+  const payload = {
+    name: nameEl.value?.trim() || '',
+    phone: phoneEl.value?.trim() || '',
+    email: emailEl.value?.trim() || '',
+    address: addrEl.value?.trim() || '',
+  };
+
+  if (!payload.name || !payload.phone || !payload.email) {
+    showToast('Name, phone and email are required');
+    return;
+  }
+
+  localStorage.setItem('userProfile', JSON.stringify(payload));
+  showToast('Profile updated successfully');
+  toggleEdit();
+}
+
+function hydrateProfileFromStorage() {
+  const saved = safeParseJSON(localStorage.getItem('userProfile'));
+  if (!saved) return;
+
+  const nameEl = document.getElementById('prof-name');
+  const phoneEl = document.getElementById('prof-phone');
+  const emailEl = document.getElementById('prof-email');
+  const addrEl = document.getElementById('prof-addr');
+
+  if (nameEl && saved.name) nameEl.value = saved.name;
+  if (phoneEl && saved.phone) phoneEl.value = saved.phone;
+  if (emailEl && saved.email) emailEl.value = saved.email;
+  if (addrEl && saved.address) addrEl.value = saved.address;
 }
 
 // ── Navbar Mobile Menu Toggle & Scroll Spy ──
@@ -1032,6 +1104,7 @@ document.addEventListener('DOMContentLoaded', () => {
   prefillLoginForm();
   toggleSignupFields();
   toggleLoginFields();
+  hydrateProfileFromStorage();
 });
 
 // Export functions for global access
@@ -1052,6 +1125,8 @@ window.prefillLoginForm = prefillLoginForm;
 window.toggleSignupFields = toggleSignupFields;
 window.toggleLoginFields = toggleLoginFields;
 window.toggleLoginType = toggleLoginType;
+window.toggleEdit = toggleEdit;
+window.saveProfile = saveProfile;
 initPriceFilter();
 initThumbs();
 export {};
